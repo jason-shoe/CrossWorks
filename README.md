@@ -1,22 +1,45 @@
 # CrossWorks
 
 ## Architecture
- - ReactJS
- - Java Backend
+ - Frontend
+   - Framework: React 
+   - Language: Typescript
+   - Styling: Sass modules
+ - Backend
+   - Framework: Java Spring
 
 ## Cloning the Repository
+1. `git clone git@github.com:jason-shoe/CrossWorks.git`
+
 
 ## Running the Frontend
-
 First Time:
 1. `cd frontend`
-2. `npm install sass`
+2. `npm install`
+3. `npm install sass`
 
 Running Everytime:
 1. `cd frontend`
 2. `npm start`
 
 ## Running the Backend
+WORK IN PROGRESS
+
+## Workflow
+1. Create an issue or find an issue in the Issue tab. If making an issue, make sure to fill in the blanks and add a frontend/backend label to the issue
+2. Checkout to main, pull, and then make a new branch and do changes there.
+3. Commit and push changes.
+4. Create PR and make sure its properly linked to Github issue
+5. Merge the PR
+
+## Coding Standards
+Frontend
+- Always use functional components. Never use class components
+- Always use `React.memo` for functional components.
+- Keep styling as modular as possible. Try not to reuse same stylesheet for multiple components.
+
+Backend
+- Work in Progress
 
 ## Common GitHub Commands
 **Making Changes**
@@ -34,6 +57,5 @@ Running Everytime:
 After making a branch and performing changes on files to that branch, there is a possibility that someone else was editing and merged some of the same files as you.
 1. `git checkout main`
 2. `git pull origin main`
-3. `git pull origin main`
-4. `get checkout <branch you were on>`
-5. ``
+3. `get checkout <branch you were on>`
+4. `git fetch`
