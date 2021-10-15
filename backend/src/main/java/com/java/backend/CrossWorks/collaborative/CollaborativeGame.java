@@ -1,10 +1,9 @@
-package src.main.java.com.javabackend.crossworks.collaborative;
-
-import src.main.java.com.javabackend.crossworks.models.Crossword;
-import src.main.java.com.javabackend.crossworks.models.Grid;
+package com.java.backend.CrossWorks.collaborative;
 
 import java.util.UUID;
 import java.util.Vector;
+import com.java.backend.CrossWorks.models.Crossword;
+import com.java.backend.CrossWorks.models.Grid;
 
 public class CollaborativeGame {
     private String gameId;
