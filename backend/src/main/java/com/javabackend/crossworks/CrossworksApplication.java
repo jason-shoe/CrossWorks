@@ -1,4 +1,4 @@
-package com.javabackend.crossworks;
+package src.main.java.com.javabackend.crossworks;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
