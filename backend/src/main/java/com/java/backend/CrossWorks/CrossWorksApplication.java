@@ -1,13 +1,13 @@
-package src.main.java.com.javabackend.crossworks;
+package com.java.backend.CrossWorks;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CrossworksApplication {
+public class CrossWorksApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CrossworksApplication.class, args);
+		SpringApplication.run(CrossWorksApplication.class, args);
 	}
 
 }

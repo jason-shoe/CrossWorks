@@ -1,9 +1,9 @@
-package src.main.java.com.javabackend.crossworks.collaborative;
+package com.java.backend.CrossWorks.collaborative;
 
 import java.util.UUID;
 
 public class CollaborativePlayer {
-    private String playerId;
+    private final String playerId;
 
     public CollaborativePlayer() {
         playerId = UUID.randomUUID().toString();

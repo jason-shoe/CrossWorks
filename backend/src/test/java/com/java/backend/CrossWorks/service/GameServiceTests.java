@@ -1,11 +1,10 @@
-package src.test.java.com.javabackend.crossworks.service;
+package com.java.backend.CrossWorks.service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import static org.assertj.core.api.Assertions.assertThat;
-import src.main.java.com.javabackend.crossworks.service.GameService;
 
-@SpringBootTest(classes=GameService.class)
+@SpringBootTest
 class GameServiceTests {
 
     @Test

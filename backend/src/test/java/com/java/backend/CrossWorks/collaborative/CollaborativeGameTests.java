@@ -1,13 +1,10 @@
-package src.test.java.com.javabackend.crossworks.collaborative;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import src.main.java.com.javabackend.crossworks.collaborative.CollaborativeGame;
-import src.main.java.com.javabackend.crossworks.collaborative.CollaborativePlayer;
+package com.java.backend.CrossWorks.collaborative;
 
 import java.util.Vector;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(classes=CollaborativeGame.class)
+@SpringBootTest
 class CollaborativeGameTests {
 
     @Test
