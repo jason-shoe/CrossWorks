@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class CrossworksApplication {
 
 	public static void main(String[] args) {
-		System.out.println("here i am");
 		SpringApplication.run(CrossworksApplication.class, args);
 	}
 
