@@ -23,7 +23,7 @@ Running Everytime:
 2. `npm start`
 
 ## Running the Backend
-WORK IN PROGRESS
+```./gradlew bootRun```
 
 ## Workflow
 1. Create an issue or find an issue in the Issue tab. If making an issue, make sure to fill in the blanks and add a frontend/backend label to the issue
@@ -39,7 +39,7 @@ Frontend
 - Keep styling as modular as possible. Try not to reuse same stylesheet for multiple components.
 
 Backend
-- Work in Progress
+- ```./gradlew bootRun```
 
 ## Common GitHub Commands
 **Making Changes**
