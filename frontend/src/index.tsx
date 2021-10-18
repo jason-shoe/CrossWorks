@@ -1,12 +1,31 @@
 import React from 'react';
+import { HashRouter, Route } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import './index.css';
 import Homepage from './components/homepage/Homepage';
+import CompetitivePage from './components/competitive/Competitive';
+import CollaborativePage from './components/collaborative/Collaborative';
 import reportWebVitals from './reportWebVitals';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Homepage />
+    <HashRouter>
+      <Route
+        exact
+        path='/'
+        component={Homepage}
+      />
+      <Route
+        exact
+        path='/competitive'
+        component={CompetitivePage}
+      />
+      <Route
+        exact
+        path='/collaborative'
+        component={CollaborativePage}
+      />
+    </HashRouter>
   </React.StrictMode>,
   document.getElementById('root')
 );
