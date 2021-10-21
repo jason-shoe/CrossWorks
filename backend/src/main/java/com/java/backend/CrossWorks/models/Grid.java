@@ -27,8 +27,25 @@ public class Grid {
         return board[x][y];
     }
 
+    public void setCell(int x, int y, GridCell cell) {
+        board[x][y] = cell;
+    }
+
     public int getSize() {
         return size;
+    }
+
+    public int getNumNonBlock() {
+        int counter = 0;
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+               if (board[x][y] != GridCell.BLOCK) {
+                  counter += 1;
+               }
+            }
+        }
+
+        return counter;
     }
 
     public void clearBoard() {
