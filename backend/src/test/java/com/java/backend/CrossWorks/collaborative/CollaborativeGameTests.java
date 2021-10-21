@@ -9,7 +9,7 @@ class CollaborativeGameTests {
 
     @Test
     void correctPlayerIds() {
-        CollaborativeGame game = new CollaborativeGame();
+        CollaborativeGame game = new CollaborativeGame("fill in later");
         CollaborativePlayer playerOne = new CollaborativePlayer();
         CollaborativePlayer playerTwo = new CollaborativePlayer();
 
