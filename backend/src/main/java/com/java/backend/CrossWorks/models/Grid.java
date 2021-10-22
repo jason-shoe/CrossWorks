@@ -1,15 +1,30 @@
 package com.java.backend.CrossWorks.models;
 
+import javax.persistence.*;
 import java.util.Random;
 
+@Entity
 public class Grid {
+    @Id
+    @GeneratedValue(strategy= GenerationType.AUTO)
+    private Long id;
+
+    @Column(columnDefinition="LONGTEXT")
     private final GridCell[][] board;
     private final int size;
+
+    protected Grid() {
+        this(10);
+    }
 
     public Grid(int s) {
         size = s;
         board = new GridCell[size][size];
         clearBoard();
+    }
+
+    public Long getId() {
+        return id;
     }
 
     // deep copy constructor

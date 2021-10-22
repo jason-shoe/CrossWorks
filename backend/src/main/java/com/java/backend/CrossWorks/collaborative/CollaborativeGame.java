@@ -9,10 +9,19 @@ import com.java.backend.CrossWorks.models.GameStatus;
 import com.java.backend.CrossWorks.models.Grid;
 import com.java.backend.CrossWorks.models.GridCell;
 
+import javax.persistence.*;
+
+@Entity
 public class CollaborativeGame {
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long id;
+
     private String gameId;
     private Vector<CollaborativePlayer> players;
+    @ManyToOne(cascade = {CascadeType.ALL})
     private Crossword crossword;
+    @ManyToOne(cascade = {CascadeType.ALL})
     private Grid answers;
     private GameStatus status;
 
@@ -20,14 +29,25 @@ public class CollaborativeGame {
     private int numCorrect;
     private int numCells;
 
+    protected CollaborativeGame() {}
+
     public CollaborativeGame(String gameId) {
-        gameId = gameId;
+        this.gameId = gameId;
         players = new Vector();
         status = GameStatus.NOT_STARTED;
+        setCrossword("todo later");
+    }
+
+    public String getGameId() {
+        return gameId;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public void setCrossword(String crosswordId) {
-        Crossword crossword = new Crossword(crosswordId);
+        Crossword crossword = new Crossword(crosswordId, 10);
         answers = new Grid(crossword.getSize());
         answers.copyStructure(crossword.getBoard());
 
