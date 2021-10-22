@@ -2,18 +2,31 @@ package com.java.backend.CrossWorks.models;
 
 import com.java.backend.CrossWorks.exceptions.InvalidMove;
 
+import javax.persistence.*;
+import java.util.UUID;
+
+@Entity
 public class Crossword {
+    @Id
     private String crosswordId;
+    @ManyToOne(cascade = {CascadeType.ALL})
     private Grid answers;
 
-    public Crossword(String id) {
-        crosswordId = id;
+    protected Crossword() {
+        this(UUID.randomUUID().toString(), 10);
+    }
+
+    public Crossword(String crosswordId, int size) {
+        this.crosswordId = crosswordId;
         // somehow get the size of the crossword
-        int n = 10;
-        answers = new Grid(n);
+        answers = new Grid(size);
         answers.randomFill();
         // TODO: Use JPA storage to map id -> answers
         // TODO: Use JPA storage to get hints
+    }
+
+    public String getCrosswordId() {
+        return crosswordId;
     }
 
     public Boolean checkCell(int x, int y, GridCell pred) throws InvalidMove {
