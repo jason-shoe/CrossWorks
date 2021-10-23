@@ -9,9 +9,9 @@ class CollaborativeGameTests {
 
     @Test
     void correctPlayerIds() {
-        CollaborativeGame game = new CollaborativeGame("fill in later");
-        CollaborativePlayer playerOne = new CollaborativePlayer();
-        CollaborativePlayer playerTwo = new CollaborativePlayer();
+        CollaborativeGame game = new CollaborativeGame();
+        Player playerOne = new Player();
+        Player playerTwo = new Player();
 
         game.addPlayer(playerOne);
         game.addPlayer(playerTwo);

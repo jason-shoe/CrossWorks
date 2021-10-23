@@ -20,7 +20,7 @@ public class Grid {
     public Grid(int s) {
         size = s;
         board = new GridCell[size][size];
-        clearBoard();
+        clear();
     }
 
     public Long getId() {
@@ -63,10 +63,20 @@ public class Grid {
         return counter;
     }
 
-    public void clearBoard() {
+    public void clear() {
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
                 board[x][y] = GridCell.EMPTY;
+            }
+        }
+    }
+
+    public void blacken() {
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                if(board[x][y] == GridCell.EMPTY) {
+                    board[x][y] = GridCell.BLOCK;
+                }
             }
         }
     }

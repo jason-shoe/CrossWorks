@@ -1,5 +1,8 @@
 package com.java.backend.CrossWorks.models;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum GridCell {
     BLOCK('#'),
     EMPTY(' '),
@@ -34,6 +37,23 @@ public enum GridCell {
 
     GridCell(char charValue) {
         this.charValue = charValue;
+    }
+
+    private static final Map<Character, GridCell> BY_CHAR_VALUE = new HashMap<>();
+
+    static {
+        for (GridCell cell: values()) {
+            BY_CHAR_VALUE.put(cell.charValue, cell);
+        }
+    }
+
+    public static GridCell charValueOf(char charValue) {
+        // TODO: if char value is not in the map, catch the error
+        return BY_CHAR_VALUE.get(charValue);
+    }
+
+    public boolean isEmpty() {
+        return this == GridCell.EMPTY;
     }
 }
 

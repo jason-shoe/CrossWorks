@@ -1,11 +1,12 @@
 package com.java.backend.CrossWorks.storage;
 
-import java.util.List;
 
 import com.java.backend.CrossWorks.collaborative.CollaborativeGame;
 import org.springframework.data.repository.CrudRepository;
 
-public interface CollaborativeGameStorage extends CrudRepository<CollaborativeGame, Long> {
+import java.util.Optional;
 
-    CollaborativeGame findById(long id);
+public interface CollaborativeGameStorage extends CrudRepository<CollaborativeGame, String> {
+
+    Optional<CollaborativeGame> findById(String id);
 }

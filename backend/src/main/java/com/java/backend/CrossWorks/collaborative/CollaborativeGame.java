@@ -4,73 +4,37 @@ import java.util.UUID;
 import java.util.Vector;
 
 import com.java.backend.CrossWorks.exceptions.InvalidMove;
-import com.java.backend.CrossWorks.models.Crossword;
-import com.java.backend.CrossWorks.models.GameStatus;
-import com.java.backend.CrossWorks.models.Grid;
-import com.java.backend.CrossWorks.models.GridCell;
+import com.java.backend.CrossWorks.models.*;
 
 import javax.persistence.*;
 
 @Entity
-public class CollaborativeGame {
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long id;
-
-    private String gameId;
-    private Vector<CollaborativePlayer> players;
+public class CollaborativeGame extends Game{
+    private Vector<Player> players;
     @ManyToOne(cascade = {CascadeType.ALL})
-    private Crossword crossword;
-    @ManyToOne(cascade = {CascadeType.ALL})
-    private Grid answers;
-    private GameStatus status;
+    private TeamAnswers answers;
 
-    private int numFilled;
-    private int numCorrect;
-    private int numCells;
-
-    protected CollaborativeGame() {}
-
-    public CollaborativeGame(String gameId) {
-        this.gameId = gameId;
+    public CollaborativeGame() {
+        super(Datatype.COLLABORATIVE_GAME.prefix + UUID.randomUUID().toString());
         players = new Vector();
-        status = GameStatus.NOT_STARTED;
-        setCrossword("todo later");
     }
 
-    public String getGameId() {
-        return gameId;
+    public CollaborativeGame(Crossword crossword) {
+        this();
+        setCrossword(crossword);
     }
 
-    public Long getId() {
-        return id;
+    public void setCrossword(Crossword crossword) {
+        this.changeCrossword(crossword);
+
+        Grid answersGrid = new Grid(crossword.getSize());
+        answersGrid.copyStructure(crossword.getBoard());
+        int numCells = crossword.getNumNonBlock();
+
+        this.answers = new TeamAnswers(answersGrid, numCells);
     }
 
-    public void setCrossword(String crosswordId) {
-        Crossword crossword = new Crossword(crosswordId, 10);
-        answers = new Grid(crossword.getSize());
-        answers.copyStructure(crossword.getBoard());
-
-        numCells = crossword.getNumNumBlock();
-        numFilled = 0;
-        numCorrect = 0;
-
-    }
-
-    public void startGame() {
-        status = GameStatus.IN_PROGRESS;
-    }
-
-    public void endGame() {
-        status = GameStatus.FINISHED;
-        System.out.println("Game is finished");
-    }
-
-    public Boolean checkFinished() {
-        return numCorrect == numCells;
-    }
-
-    public void addPlayer(CollaborativePlayer player) {
+    public void addPlayer(Player player) {
         players.addElement(player);
     }
 
@@ -82,34 +46,8 @@ public class CollaborativeGame {
         return player_ids;
     }
 
-    public void makeMove(CollaborativePlayer player, int x, int y, char val) throws InvalidMove {
-        // mapping char -> GridCell
-        GridCell gridCellVal = GridCell.EMPTY;
-        for (GridCell cell: GridCell.values()) {
-            if (cell.charValue == val) {
-                gridCellVal = cell;
-            }
-        }
-
-        GridCell currentValue = answers.getCell(x, y);
-        if (currentValue == GridCell.BLOCK) {
-            throw new InvalidMove("Tried filling a blocked cell");
-        }
-
-        if (currentValue != GridCell.EMPTY) {
-            numFilled += 1;
-        }
-
-        answers.setCell(x, y, gridCellVal);
-        if (crossword.checkCell(x, y, gridCellVal)) {
-            numCorrect += 1;
-
-            if (checkFinished()) {
-                endGame();
-            }
-        }
-
-
+    public void makeMove(Player player, int x, int y, char val) throws InvalidMove {
+        answers.makeMove(x, y, GridCell.charValueOf(val), this.getCell(x, y));
     }
 
 }
