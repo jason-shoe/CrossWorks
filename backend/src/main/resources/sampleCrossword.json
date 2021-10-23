@@ -1,8 +1,8 @@
 {
-  "crosswordId": "sampleCrossword",
+  "name": "sampleCrossword",
   "date": "October 2, 2021",
   "source": "NYT-mini",
-  "size": 7
+  "size": 7,
   "clues": [
     {
       "hintNumber": 1,
