@@ -1,5 +1,6 @@
 package com.java.backend.CrossWorks.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -19,6 +20,7 @@ public class CrosswordHint implements Serializable {
     public String hint;
     public int x;
     public int y;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String answer;
     public Direction direction;
 
@@ -34,4 +36,9 @@ public class CrosswordHint implements Serializable {
     public String toString() {
        return hint + " " + String.valueOf(x) + " " + String.valueOf(y) + " " + answer;
     }
+
+    public int getAnswerLength() {
+        return answer.length();
+    }
+
 }
