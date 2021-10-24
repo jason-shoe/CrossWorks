@@ -9,7 +9,7 @@ class GameServiceTests {
 
     @Test
     void crosswordIsNotNull() {
-        GameService gameservice = new GameService();
+        CollaborativeGameService gameservice = new CollaborativeGameService();
 
         assertThat(gameservice).isNotNull();
     }

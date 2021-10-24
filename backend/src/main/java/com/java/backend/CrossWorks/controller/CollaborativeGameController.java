@@ -7,7 +7,7 @@ import com.java.backend.CrossWorks.collaborative.CollaborativeGame;
 import com.java.backend.CrossWorks.collaborative.Player;
 import com.java.backend.CrossWorks.models.Crossword;
 import com.java.backend.CrossWorks.service.CrosswordService;
-import com.java.backend.CrossWorks.service.GameService;
+import com.java.backend.CrossWorks.service.CollaborativeGameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,12 +17,12 @@ import java.lang.reflect.Method;
 @RestController
 @RequestMapping("/collaborative-game")
 public class CollaborativeGameController {
-    private final GameService gameService;
+    @Autowired
+    private CollaborativeGameService gameService;
     @Autowired
     private CrosswordService crosswordService;
 
     public CollaborativeGameController() {
-        this.gameService = new GameService();
     }
 
     @GetMapping("/sample-crossword")
