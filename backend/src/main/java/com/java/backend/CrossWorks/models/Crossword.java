@@ -52,9 +52,9 @@ public class Crossword {
     public Boolean processHint(CrosswordHint hint) {
         String answer = hint.getAnswer();
         int isAcross = hint.direction == Direction.ACROSS ? 1 : 0;
-        for(int i = hint.x; i < answer.length(); i++) {
-            int x = hint.x + (1 - isAcross) * i;
-            int y = hint.y + isAcross * i;
+        for(int i = hint.row; i < answer.length(); i++) {
+            int x = hint.row + (1 - isAcross) * i;
+            int y = hint.col + isAcross * i;
             GridCell currCell = answers.getCell(x, y);
             GridCell newCell = GridCell.charValueOf(answer.charAt(i));
 
@@ -72,13 +72,13 @@ public class Crossword {
         return crosswordId;
     }
 
-    public Boolean checkCell(int x, int y, GridCell pred) throws InvalidMove {
+    public Boolean checkCell(int row, int col, GridCell pred) throws InvalidMove {
         int size = answers.getSize();
-        if (0 > x || x >= size || 0 > y && y >= size) {
+        if (0 > row || row >= size || 0 > col && col >= size) {
             throw new InvalidMove("x and y values are out of bounds");
         }
 
-        return pred == answers.getCell(x, y);
+        return pred == answers.getCell(row, col);
     }
 
     public int getSize() {
