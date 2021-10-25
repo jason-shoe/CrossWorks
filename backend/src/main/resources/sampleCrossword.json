@@ -9,7 +9,7 @@
       "hint": "Australian greeting",
       "row": 0,
       "col": 0,
-      "answer": "GDAcol",
+      "answer": "GDAY",
       "direction": "ACROSS"
     },
     {
@@ -22,7 +22,7 @@
     },
     {
       "hintNumber": 7,
-      "hint": "Kecol that's equivalent to B♭",
+      "hint": "Key that's equivalent to B♭",
       "row": 2,
       "col": 0,
       "answer": "ASHARP",
@@ -38,7 +38,7 @@
     },
     {
       "hintNumber": 11,
-      "hint": "Countrcol with a maple leaf on its flag",
+      "hint": "Country with a maple leaf on its flag",
       "row": 4,
       "col": 1,
       "answer": "CANADA",
@@ -89,12 +89,12 @@
       "hint": "Had a deep desire",
       "row": 0,
       "col": 3,
-      "answer": "colEARNED",
+      "answer": "YEARNED",
       "direction": "DOWN"
     },
     {
       "hintNumber": 6,
-      "hint": "Emergenccol sorting process",
+      "hint": "Emergency sorting process",
       "row": 1,
       "col": 4,
       "answer": "TRIAGE",
