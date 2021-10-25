@@ -18,8 +18,8 @@ public class CrosswordHint implements Serializable {
 
     public int hintNumber;
     public String hint;
-    public int x;
-    public int y;
+    public int row;
+    public int col;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String answer;
     public Direction direction;
@@ -34,7 +34,7 @@ public class CrosswordHint implements Serializable {
 
     @Override
     public String toString() {
-       return hint + " " + String.valueOf(x) + " " + String.valueOf(y) + " " + answer;
+       return hint + " " + String.valueOf(row) + " " + String.valueOf(col) + " " + answer;
     }
 
     public int getAnswerLength() {

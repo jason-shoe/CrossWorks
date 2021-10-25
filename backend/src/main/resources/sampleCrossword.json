@@ -1,118 +1,118 @@
 {
   "name": "sampleCrossword",
   "date": "October 2, 2021",
-  "source": "NYT-mini",
+  "source": "NcolT-mini",
   "size": 7,
   "clues": [
     {
       "hintNumber": 1,
       "hint": "Australian greeting",
-      "x": 0,
-      "y": 0,
-      "answer": "GDAY",
+      "row": 0,
+      "col": 0,
+      "answer": "GDAcol",
       "direction": "ACROSS"
     },
     {
       "hintNumber": 5,
       "hint": "Turn back to zero",
-      "x": 1,
-      "y": 0,
+      "row": 1,
+      "col": 0,
       "answer": "RESET",
       "direction": "ACROSS"
     },
     {
       "hintNumber": 7,
-      "hint": "Key that's equivalent to B♭",
-      "x": 2,
-      "y": 0,
+      "hint": "Kecol that's equivalent to B♭",
+      "row": 2,
+      "col": 0,
       "answer": "ASHARP",
       "direction": "ACROSS"
     },
     {
       "hintNumber": 9,
       "hint": "Wedded",
-      "x": 3,
-      "y": 0,
+      "row": 3,
+      "col": 0,
       "answer": "MARRIED",
       "direction": "ACROSS"
     },
     {
       "hintNumber": 11,
-      "hint": "Country with a maple leaf on its flag",
-      "x": 4,
-      "y": 1,
+      "hint": "Countrcol with a maple leaf on its flag",
+      "row": 4,
+      "col": 1,
       "answer": "CANADA",
       "direction": "ACROSS"
     },
     {
       "hintNumber": 12,
       "hint": "Rap's ___ Thee Stallion",
-      "x": 5,
-      "y": 2,
+      "row": 5,
+      "col": 2,
       "answer": "MEGAN",
       "direction": "ACROSS"
     },
     {
       "hintNumber": 13,
       "hint": "Sandwich shop",
-      "x": 6,
-      "y": 3,
+      "row": 6,
+      "col": 3,
       "answer": "DELI",
       "direction": "ACROSS"
     },
     {
       "hintNumber": 1,
       "hint": "\"g,\" to a chemist",
-      "x": 0,
-      "y": 0,
+      "row": 0,
+      "col": 0,
       "answer": "GRAM",
       "direction": "DOWN"
     },
     {
       "hintNumber": 2,
       "hint": "Cul-___ (kind of street)",
-      "x": 0,
-      "y": 1,
+      "row": 0,
+      "col": 1,
       "answer": "DESAC",
       "direction": "DOWN"
     },
     {
       "hintNumber": 3,
       "hint": "Guru's residence",
-      "x": 0,
-      "y": 2,
+      "row": 0,
+      "col": 2,
       "answer": "ASHRAM",
       "direction": "DOWN"
     },
     {
       "hintNumber": 4,
       "hint": "Had a deep desire",
-      "x": 0,
-      "y": 3,
-      "answer": "YEARNED",
+      "row": 0,
+      "col": 3,
+      "answer": "colEARNED",
       "direction": "DOWN"
     },
     {
       "hintNumber": 6,
-      "hint": "Emergency sorting process",
-      "x": 1,
-      "y": 4,
+      "hint": "Emergenccol sorting process",
+      "row": 1,
+      "col": 4,
       "answer": "TRIAGE",
       "direction": "DOWN"
     },
     {
       "hintNumber": 8,
       "hint": "Ride a bike",
-      "x": 2,
-      "y": 5,
+      "row": 2,
+      "col": 5,
       "answer": "PEDAL",
       "direction": "DOWN"
     },
     {
       "hintNumber": 10,
       "hint": "\"___ California\" (Red Hot Chili Peppers hit)",
-      "x": 3,
-      "y": 6,
+      "row": 3,
+      "col": 6,
       "answer": "DANI",
       "direction": "DOWN"
     }
