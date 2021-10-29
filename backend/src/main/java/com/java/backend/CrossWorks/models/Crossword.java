@@ -1,11 +1,14 @@
 package com.java.backend.CrossWorks.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.java.backend.CrossWorks.exceptions.InvalidMove;
+import com.java.backend.CrossWorks.service.Views;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.Vector;
@@ -16,10 +19,12 @@ import java.util.Vector;
 @Entity
 public class Crossword {
     @Id
+    @JsonView(Views.CrosswordIdDateView.class)
     private String crosswordId;
 
     private String name;
-    private String date;
+    @JsonView(Views.CrosswordIdDateView.class)
+    private Date date;
     private String source;
     private int size;
     @Column( length = 10000)
