@@ -1,0 +1,32 @@
+.settingsWrapper {
+    display: flex;
+    width: 90%;
+    margin: 5%;
+    border: 1px solid black;
+
+    > div {
+        border: 1px solid black;
+        padding: 10px;
+
+        > h2 {
+            margin-top: 10px;
+            text-align: left;
+        }
+    }
+
+    .mainSettings {
+        flex-grow: 1;
+    }
+
+    .settingsField {
+        display: flex;
+
+        .settingsFieldLabel {
+            width: 100px;
+        }
+
+        .settingsFieldInput {
+            margin: auto 0;
+        }
+    }
+}
