@@ -6,6 +6,8 @@ import Homepage from './components/homepage/Homepage';
 import CompetitivePage from './components/competitive/Competitive';
 import CollaborativePage from './components/collaborative/Collaborative';
 import reportWebVitals from './reportWebVitals';
+/* Remember to delete this */
+import Crossword from './components/shared/Crossword';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -13,7 +15,7 @@ ReactDOM.render(
       <Route
         exact
         path='/'
-        component={Homepage}
+        component={Crossword}
       />
       <Route
         exact
