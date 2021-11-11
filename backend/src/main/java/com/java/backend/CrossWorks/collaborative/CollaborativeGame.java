@@ -10,6 +10,7 @@ import javax.persistence.*;
 
 @Entity
 public class CollaborativeGame extends Game{
+    @Column(columnDefinition="LONGTEXT")
     private Vector<Player> players;
     @ManyToOne(cascade = {CascadeType.ALL})
     private TeamAnswers answers;
@@ -36,6 +37,20 @@ public class CollaborativeGame extends Game{
 
     public void addPlayer(Player player) {
         players.addElement(player);
+    }
+
+    public boolean hasPlayer(Player player) {
+        System.out.print("Seeing if has it ");
+        System.out.print( this.getGameId());
+        for (Player arrayPlayer: players) {
+            System.out.print(arrayPlayer.getPlayerId());
+            if (arrayPlayer.getPlayerId().equals(player.getPlayerId())) {
+                System.out.println();
+                return true;
+            }
+        }
+        System.out.println();
+        return false;
     }
 
     public Vector<String> getPlayerIds() {

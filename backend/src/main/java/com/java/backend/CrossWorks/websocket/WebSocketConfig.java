@@ -38,7 +38,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/gs-guide-websocket")
                 .setAllowedOrigins("http://localhost:3000/")
-                .addInterceptors(new HttpHandshakeInterceptor())
+//                .addInterceptors(new HttpHandshakeInterceptor())
+                .setHandshakeHandler(new CustomHandshakeHandler())
                 .withSockJS();
     }
 

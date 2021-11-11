@@ -2,7 +2,7 @@ import React from 'react';
 import { HashRouter, Route } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import './index.css';
-import "tailwindcss/tailwind.css";
+import 'tailwindcss/tailwind.css';
 import Homepage from './components/homepage/Homepage';
 import CompetitivePage from './components/competitive/Competitive';
 import CollaborativePage from './components/collaborative/Collaborative';
@@ -11,7 +11,7 @@ import Settings from './components/settings/Settings';
 import reportWebVitals from './reportWebVitals';
 /* Remember to delete this */
 import Crossword from './components/shared/Crossword';
-import GameModeSelection from "./components/homepage/GameModeSelection";
+import GameModeSelection from './components/homepage/GameModeSelection';
 
 ReactDOM.render(
     <React.StrictMode>
@@ -20,10 +20,10 @@ ReactDOM.render(
             <Route exact path="/competitive" component={CompetitivePage} />
             <Route exact path="/collaborative" component={CollaborativePage} />
             <Route exact path="/createGame" component={GameModeSelection} />
-            <Route exact path="/competitive-settings">
+            <Route exact path="/competitive-settings/:gameId?">
                 <Settings isCollaborative={false} />
             </Route>
-            <Route exact path="/collaborative-settings">
+            <Route exact path="/collaborative-settings/:gameId?">
                 <Settings isCollaborative={true} />
             </Route>
         </HashRouter>

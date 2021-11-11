@@ -5,12 +5,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.java.backend.CrossWorks.models.Datatype;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.simp.user.SimpUser;
 import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,11 +33,9 @@ public class MessageController {
     @MessageMapping("/hello")
     @SendTo("/topic/hello")
     public String hello(SimpMessageHeaderAccessor headerAccessor) {
-//        message.put("timestamp", Long.toString(System.currentTimeMillis()));
-//        chatHistoryDao.save(message);
+        String playerId = headerAccessor.getSessionAttributes().get("playerId").toString();
         System.out.println("new connection from this session");
-		System.out.println(sessionId);
-        String sessionId = headerAccessor.getSessionAttributes().get("sessionId").toString();
-        return sessionId;
+		System.out.println(playerId);
+        return playerId;
     }
 }
