@@ -3,6 +3,7 @@ import { UserEntry } from '../shared/UserEntry';
 import Calendar from '../shared/Calendar';
 import { InputNumber } from 'rsuite';
 import { UserInfo } from '@rsuite/icons';
+// @ts-ignore
 import SockJsClient from 'react-stomp';
 import styles from './Settings.module.scss';
 
@@ -17,7 +18,7 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
 
     const { isCollaborative } = props;
 
-    const onMessageRecieve = (msg) => {
+    const onMessageReceive = (msg: string) => {
         setMessages((prevMessages) => [...prevMessages, msg]);
     };
     const sendMessage = () => {
@@ -60,15 +61,15 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
             <SockJsClient
                 url="http://localhost:8080/gs-guide-websocket"
                 topics={['/topic/hello']}
-                onMessage={(msg) => {
+                onMessage={(msg: string) => {
                     console.log('this is the message', msg);
-                    onMessageRecieve(msg);
+                    onMessageReceive(msg);
                 }}
-                ref={(client) => {
+                ref={(client: any) => {
                     setClientRef(client);
                 }}
                 onConnect={() => {
-                    console.log('successuflly connected to websocket');
+                    console.log('successfully connected to websocket');
                     setClientConnected(true);
                 }}
                 onDisconnect={() => setClientConnected(false)}

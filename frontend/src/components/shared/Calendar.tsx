@@ -1,5 +1,5 @@
 import React, { memo, useState, useEffect, useCallback } from 'react';
-import { Calendar as ReactCalendar } from 'react-calendar';
+import ReactCalendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 
 interface CrosswordIdDate {
