@@ -10,8 +10,8 @@ class CollaborativeGameTests {
     @Test
     void correctPlayerIds() {
         CollaborativeGame game = new CollaborativeGame();
-        Player playerOne = new Player();
-        Player playerTwo = new Player();
+        Player playerOne = new Player("sessionTwo");
+        Player playerTwo = new Player("sessionOne");
 
         game.addPlayer(playerOne);
         game.addPlayer(playerTwo);

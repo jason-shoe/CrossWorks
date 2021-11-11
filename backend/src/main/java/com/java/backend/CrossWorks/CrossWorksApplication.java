@@ -47,16 +47,5 @@ public class CrossWorksApplication {
 			}
 		};
 	}
-	@Bean
-	public CommandLineRunner demo(CollaborativeGameStorage repository) {
-		return (args) -> {
-			repository.save(new CollaborativeGame());
-			repository.save(new CollaborativeGame());
-			log.info("games found with findAll():");
-			for (CollaborativeGame game: repository.findAll()) {
-				log.info(game.getGameId());
-			}
-		};
-	}
 
 }
