@@ -1,28 +1,37 @@
 import React, { memo, useEffect, useState, useCallback } from 'react';
 import styles from './styles/Homepage.module.scss';
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom'
 
 export const Homepage = memo(function Homepage() {
     const history = useHistory();
 
-    const navigateToCompetitiveSettings = useCallback(
-        () => history.push('/competitive-settings'),
+    const navigateToCreateGame = useCallback(
+        () => history.push('/createGame'),
         []
     );
-    const navigateToCollaborativeSettings = useCallback(
+    const navigateToJoinGame = useCallback(
         () => history.push('/collaborative-settings'),
         []
     );
+
+    const buttonStyles = `bg-white border border-gray-200 rounded text-xl py-32
+                          flex-grow shadow hover:bg-blue-50 focus:ring-2
+                          focus:ring-blue-700`
     return (
-        <div className={styles.App}>
+        <div className={`max-w-2xl m-auto mt-20 space-y-8`}>
             {/* settings component there is just temporary */}
-            <p>This is the homepage</p>
-            <button onClick={navigateToCollaborativeSettings}>
-                Collaborative Game
+            <div className={`space-y-3`}>
+              <p className={`text-4xl font-bold text-blue-700`}>CrossWorks</p>
+              <p>Welcome to crosswords for teams! Select an option to get started:</p>
+            </div>
+          <div className={`flex justify-between space-x-6`}>
+            <button className={buttonStyles} onClick={navigateToCreateGame}>
+              Create Game
             </button>
-            <button onClick={navigateToCompetitiveSettings}>
-                Competitive Game
+            <button className={buttonStyles} onClick={navigateToJoinGame}>
+              Join Game
             </button>
+          </div>
         </div>
     );
 });
