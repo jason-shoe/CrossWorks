@@ -10,26 +10,14 @@ import reportWebVitals from './reportWebVitals';
 import Crossword from './components/shared/Crossword';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <HashRouter>
-      <Route
-        exact
-        path='/'
-        component={Crossword}
-      />
-      <Route
-        exact
-        path='/competitive'
-        component={CompetitivePage}
-      />
-      <Route
-        exact
-        path='/collaborative'
-        component={CollaborativePage}
-      />
-    </HashRouter>
-  </React.StrictMode>,
-  document.getElementById('root')
+    <React.StrictMode>
+        <HashRouter>
+            <Route exact path="/" component={Homepage} />
+            <Route exact path="/competitive" component={CompetitivePage} />
+            <Route exact path="/collaborative" component={CollaborativePage} />
+        </HashRouter>
+    </React.StrictMode>,
+    document.getElementById('root')
 );
 
 // If you want to start measuring performance in your app, pass a function
