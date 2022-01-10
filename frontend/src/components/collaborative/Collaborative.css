@@ -1,0 +1,42 @@
+/* div that contains the entire collaborative page*/
+.collaborative-page-div {
+    display: flex;
+    width: 100%;
+}
+
+/* div that contains the crossword */
+.crossword-grid-div {
+    display: flex;
+    width: 50%;
+    justify-content: center;
+}
+
+/* div that contains the clues */
+.clues-div {
+    display: flex;
+    width: 50%;
+    justify-content: center;
+}
+
+/* div that contains the across clues */
+.across-clues-div {
+    width: 50%;
+}
+
+/* div that contains the down clues */
+.down-clues-div {
+    width: 50%;
+}
+
+/* Styling for the clues heading (e.g. "Across Clues") */
+.clues-heading {
+    font-weight: bold;
+    font-size: 30px;
+}
+
+/* Styling for the actual text of the clues */
+.clue-text {
+    font-size: 18px;
+    margin-top: 5px;
+}
+
