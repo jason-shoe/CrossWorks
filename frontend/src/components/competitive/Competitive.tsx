@@ -1,5 +1,5 @@
 import React, { memo, useState, useEffect } from 'react';
-import { CrosswordData, CrosswordHint } from '../shared/types/CrosswordTypes';
+import { CrosswordData } from '../shared/types';
 import { request } from '../shared/util/request';
 import styles from './styles/Competitive.module.scss';
 
