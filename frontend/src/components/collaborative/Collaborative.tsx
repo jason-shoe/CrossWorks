@@ -1,96 +1,166 @@
 import React, { memo, useState, useEffect } from 'react';
+import internal from 'stream';
+import {
+    NavigationSettings,
+    Coordinates,
+    Direction,
+    CellHintAnnotation,
+    Clue
+} from '../shared/types';
 import Crossword from '../shared/Crossword';
 import './Collaborative.css';
+import { CrosswordHint } from '../shared/CrosswordHint';
 
 export const Collaborative = memo(function Collaborative() {
+    const [error, setError] = useState(null);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [clues, setClues] = useState([]);
+    const [crosswordSize, setCrosswordSize] = useState(0);
+    const [inputCellsArray, setInputCellsArray] = useState<
+        CellHintAnnotation[][] | undefined
+    >(undefined);
 
-  const [error, setError] = useState(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [clues, setClues] = useState([]);
-  const [crosswordSize, setCrosswordSize] = useState(0);
-
-  // Calling sample crossword data API
-  useEffect(() => {
-    fetch("http://localhost:8080/collaborative-game/sample-crossword")
-      .then(res => res.json())
-      .then(
-        (result) => {
-          // Storing the crossword clues
-          setClues(result.clues);
-          // Storing the size of the crossword
-          setCrosswordSize(result.size);
-          // Indicates that the crossword data hass been retrieved
-          setIsLoaded(true);
-        },
-        // Handling any errors
-        (error) => {
-          setIsLoaded(true);
-          setError(error);
-        }
-      )
-  }, [])
-
-  // Array that keeps track of the cells that should be able to take in an input
-  // Initially, every cell cannot take in an input
-  let inputCellsArray:string[][]= [ 
-    ["nonInputCell","nonInputCell","nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell"],
-    ["nonInputCell","nonInputCell","nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell"],
-    ["nonInputCell","nonInputCell","nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell"],
-    ["nonInputCell","nonInputCell","nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell"],
-    ["nonInputCell","nonInputCell","nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell"],
-    ["nonInputCell","nonInputCell","nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell"],
-    ["nonInputCell","nonInputCell","nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell", "nonInputCell"] ]
-
-  if (isLoaded) {
-    // Modifies the inputCellsArray so that the appropriate cells can now take in an input
-    clues.forEach((clue) => {
-      var initialRowIndex = clue['row']
-      var initialColIndex = clue['col']
-      if(clue['direction'] === 'ACROSS') {
-        for (let i = initialColIndex; i < (initialColIndex + clue['answerLength']); i++) {
-          inputCellsArray[initialRowIndex][i] = "inputCell"
-        }
-      } else {
-        for (let i = initialRowIndex; i < (initialRowIndex + clue['answerLength']); i++) {
-          inputCellsArray[i][initialColIndex] = "inputCell"
-        }
-      }
+    const [navSettings, setNavSettings] = useState<NavigationSettings>({
+        coordinates: { row: 0, col: 0 },
+        direction: Direction.ACROSS
     });
-  }
 
+    // Calling sample crossword data API
+    useEffect(() => {
+        fetch('http://localhost:8080/collaborative-game/sample-crossword')
+            .then((res) => res.json())
+            .then(
+                (result) => {
+                    // Storing the crossword clues
+                    setClues(result.clues);
+                    // Storing the size of the crossword
+                    setCrosswordSize(result.size);
+                    // Indicates that the crossword data hass been retrieved
+                    setIsLoaded(true);
 
+                    let inputCellsTemp: CellHintAnnotation[][] = [
+                        ...Array(result.size)
+                    ].map((x) =>
+                        Array(result.size).fill({
+                            across: undefined,
+                            down: undefined
+                        })
+                    );
 
-  return (
-    <div className='collaborative-page-div'>
+                    // Array that keeps track of the cells that should be able to take in an input
+                    // Initially, every cell cannot take in an input
+                    result.clues.forEach((clue: Clue) => {
+                        var initialRowIndex = clue.row;
+                        var initialColIndex = clue.col;
+                        if (clue.direction === Direction.ACROSS) {
+                            for (
+                                let i = initialColIndex;
+                                i < initialColIndex + clue.answerLength;
+                                i++
+                            ) {
+                                inputCellsTemp[initialRowIndex][i] = {
+                                    ...inputCellsTemp[initialRowIndex][i],
+                                    across: {
+                                        hintNumber: clue.hintNumber,
+                                        isStart: i == initialColIndex
+                                    },
+                                    isValid:
+                                        inputCellsTemp[initialRowIndex][i]
+                                            .down != undefined
+                                };
+                            }
+                        } else {
+                            for (
+                                let i = initialRowIndex;
+                                i < initialRowIndex + clue.answerLength;
+                                i++
+                            ) {
+                                inputCellsTemp[i][initialColIndex] = {
+                                    ...inputCellsTemp[i][initialColIndex],
+                                    down: {
+                                        hintNumber: clue.hintNumber,
+                                        isStart: i == initialRowIndex
+                                    },
+                                    isValid:
+                                        inputCellsTemp[i][initialColIndex]
+                                            .across != undefined
+                                };
+                            }
+                        }
+                    });
+                    setInputCellsArray(inputCellsTemp);
+                },
+                // Handling any errors
+                (error) => {
+                    setIsLoaded(true);
+                    setError(error);
+                }
+            );
+    }, []);
 
-      {/* Displaying the crossword grid*/}
-      <div className='crossword-grid-div'>
-        {isLoaded &&
-          <Crossword size={crosswordSize} inputCells={inputCellsArray}/>
-        }
-      </div>
+    return (
+        <div>
+            {/* Displaying the crossword grid*/}
+            {isLoaded && inputCellsArray && (
+                <div className="collaborative-page-div">
+                    <div className="crossword-grid-div">
+                        <Crossword
+                            size={crosswordSize}
+                            inputCells={inputCellsArray}
+                            setNavSettings={setNavSettings}
+                            navSettings={navSettings}
+                        />
+                    </div>
 
-      {/* Displaying the crossword clues*/}
-      <div className='clues-div'>
-        <div className='across-clues-div'>
-          <p className='clues-heading'>Across Clues</p>
-          {clues.map((clue, index) => {
-            if(clue['direction'] === 'ACROSS') {
-              return <p key={index} className='clue-text'>{clue['hintNumber']}) {clue['hint']}</p> 
-            }
-          })}
+                    {/* Displaying the crossword clues*/}
+                    <div className="clues-div">
+                        <div className="across-clues-div">
+                            <p className="clues-heading">Across Clues</p>
+                            {clues.map((clue: Clue, index) => {
+                                if (clue.direction === Direction.ACROSS) {
+                                    return (
+                                        <CrosswordHint
+                                            clue={clue}
+                                            navSettings={navSettings}
+                                            setNavSettings={setNavSettings}
+                                            annotationData={
+                                                inputCellsArray[
+                                                    navSettings.coordinates.row
+                                                ][navSettings.coordinates.col]
+                                            }
+                                            textClassName={'clue-text'}
+                                            key={index}
+                                        />
+                                    );
+                                }
+                            })}
+                        </div>
+                        <div className="down-clues-div">
+                            <p className="clues-heading">Down Clues</p>
+                            {clues.map((clue: Clue, index) => {
+                                if (clue.direction == Direction.DOWN) {
+                                    return (
+                                        <CrosswordHint
+                                            clue={clue}
+                                            navSettings={navSettings}
+                                            setNavSettings={setNavSettings}
+                                            annotationData={
+                                                inputCellsArray[
+                                                    navSettings.coordinates.row
+                                                ][navSettings.coordinates.col]
+                                            }
+                                            textClassName={'clue-text'}
+                                            key={index}
+                                        />
+                                    );
+                                }
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-        <div className='down-clues-div'>
-          <p className='clues-heading'>Down Clues</p>
-          {clues.map((clue, index) => {
-            if(clue['direction'] === 'DOWN') {
-              return <p key={index} className='clue-text'>{clue['hintNumber']}) {clue['hint']}</p> 
-            }
-          })}
-        </div>
-      </div>
-    </div>
-  );
-})
+    );
+});
 
 export default Collaborative;

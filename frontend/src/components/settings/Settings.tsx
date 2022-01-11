@@ -1,7 +1,7 @@
 import React, { memo, useState, useEffect } from 'react';
 import { UserEntry } from '../shared/UserEntry';
 import Calendar from '../shared/Calendar';
-import { CollaborativeGame } from '../shared/types/CollaborativeGame';
+import { CollaborativeGame } from '../shared/types';
 import { InputNumber } from 'rsuite';
 import { UserInfo } from '@rsuite/icons';
 // @ts-ignore
@@ -27,7 +27,6 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
 
     const { isCollaborative } = props;
     let { gameId } = useParams<SettingsUrlParams>();
-    console.log('gameid', gameId, gameId != null);
 
     const addPlayer = (playerId: string) => {
         setGame((prevGame: CollaborativeGame | undefined) => {
@@ -40,7 +39,6 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
         });
     };
     const onMessageReceive = (msg: string) => {
-        console.log('just recieved this message');
         if (clientId) {
             addPlayer(msg);
         } else {
@@ -48,7 +46,6 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
         }
     };
     const sendHello = () => {
-        console.log('send hello');
         try {
             clientRef.sendMessage('/app/hello');
             return true;
@@ -58,8 +55,6 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
     };
 
     useEffect(() => {
-        console.log('inside use effect, this is the sessionId', clientId);
-
         if (clientId) {
             if (gameId != null) {
                 const requestOptions = {
@@ -94,7 +89,6 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
         }
     }, [clientId]);
 
-    console.log('this is game before rendering', game);
     return (
         <div>
             <SockJsClient
