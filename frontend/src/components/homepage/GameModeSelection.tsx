@@ -1,6 +1,5 @@
 import React, { memo, useCallback, useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { GameState } from '../shared/gameState';
+import { GameState } from '../shared/types/gameState';
 
 interface GameModeSelectionProps {
     setGameState: (state: GameState) => void;
@@ -10,10 +9,9 @@ export const GameModeSelection = memo(function GameModeSelection({
     setGameState
 }: GameModeSelectionProps) {
     const [mode, setMode] = useState<GameState>();
-    const history = useHistory();
 
     const createGame = useCallback(() => {
-        if (mode != undefined) {
+        if (mode !== undefined) {
             setGameState(mode);
         }
     }, [mode, setGameState]);

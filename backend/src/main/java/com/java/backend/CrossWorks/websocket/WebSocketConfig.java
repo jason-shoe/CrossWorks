@@ -41,7 +41,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/gs-guide-websocket")
+        registry.addEndpoint("/game-socket")
                 .setAllowedOrigins("http://localhost:3000/")
 //                .addInterceptors(new HttpHandshakeInterceptor())
                 .setHandshakeHandler(new CustomHandshakeHandler())

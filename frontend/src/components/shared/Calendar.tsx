@@ -1,6 +1,7 @@
 import React, { memo, useState, useEffect, useCallback } from 'react';
 import ReactCalendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import { BACKEND_URL } from './types/httpTypes';
 
 interface CrosswordIdDate {
     crosswordId: string;
@@ -21,16 +22,13 @@ export const Calendar = memo(function CrosswordCalendarFn(
     const [crosswordIdToDateMap, setCrosswordIdToDateMap] = useState<
         Map<string, Date>
     >(new Map());
-    const [dateToCrosswordIdMap, setDateToCrosswordIdMap] = useState<
-        Map<Date, string>
-    >(new Map());
 
     const [availableCrosswords, setAvailableCrosswords] = useState<
         CrosswordIdDate[]
     >([]);
 
     useEffect(() => {
-        fetch('http://localhost:8080/collaborative-game/dates')
+        fetch(BACKEND_URL + 'collaborative-game/dates')
             .then((response) => response.json())
             .then((data) => {
                 const sortedCrosswords: CrosswordIdDate[] = data
@@ -44,14 +42,14 @@ export const Calendar = memo(function CrosswordCalendarFn(
                         a.crosswordDate > b.crosswordDate ? 1 : -1
                     );
                 const forwardMap = new Map();
-                sortedCrosswords.map(({ crosswordId, crosswordDate }) => {
+                sortedCrosswords.forEach(({ crosswordId, crosswordDate }) => {
                     forwardMap.set(crosswordId, crosswordDate);
                 });
                 setCrosswordIdToDateMap(forwardMap);
                 setAvailableCrosswords(sortedCrosswords);
 
-                if (sortedCrosswords.length != 0) {
-                    if (crosswordId == '') {
+                if (sortedCrosswords.length !== 0) {
+                    if (crosswordId === '') {
                         setSelectedDateChange(
                             sortedCrosswords[sortedCrosswords.length - 1]
                                 .crosswordDate
@@ -66,11 +64,11 @@ export const Calendar = memo(function CrosswordCalendarFn(
                 }
             })
             .catch((error) => console.error(error));
-    }, []);
+    }, [crosswordId, setCrosswordId]);
 
     useEffect(() => {
-        if (availableCrosswords.length != 0) {
-            if (crosswordId == '') {
+        if (availableCrosswords.length !== 0) {
+            if (crosswordId === '') {
                 setSelectedDateChange(
                     availableCrosswords[availableCrosswords.length - 1]
                         .crosswordDate
@@ -83,7 +81,12 @@ export const Calendar = memo(function CrosswordCalendarFn(
                 setSelectedDateChange(crosswordIdToDateMap.get(crosswordId));
             }
         }
-    }, [crosswordId, availableCrosswords, crosswordIdToDateMap]);
+    }, [
+        crosswordId,
+        availableCrosswords,
+        crosswordIdToDateMap,
+        setCrosswordId
+    ]);
 
     const sameDay = useCallback(
         (d1: Date, d2: Date) =>
@@ -119,16 +122,11 @@ export const Calendar = memo(function CrosswordCalendarFn(
                     _obj: CrosswordIdDate[]
                 ) => sameDay(value.crosswordDate, newDate)
             );
-            if (eligibleDates.length != 0) {
+            if (eligibleDates.length !== 0) {
                 setCrosswordId(eligibleDates[0].crosswordId);
             }
         },
-        [
-            setSelectedDateChange,
-            dateToCrosswordIdMap,
-            setCrosswordId,
-            availableCrosswords
-        ]
+        [availableCrosswords, sameDay, setCrosswordId]
     );
 
     return (

@@ -1,7 +1,5 @@
-import React, { memo, useEffect, useState, useCallback } from 'react';
-import styles from './styles/Homepage.module.scss';
-import { useHistory } from 'react-router-dom';
-import { GameState } from '../shared/gameState';
+import { memo, useCallback } from 'react';
+import { GameState } from '../shared/types/gameState';
 
 interface HomepageProps {
     setGameState: (state: GameState) => void;
@@ -10,8 +8,6 @@ interface HomepageProps {
 export const Homepage = memo(function Homepage({
     setGameState
 }: HomepageProps) {
-    const history = useHistory();
-
     const navigateToCreateGame = useCallback(
         () => setGameState(GameState.CREATE_GAME),
         [setGameState]

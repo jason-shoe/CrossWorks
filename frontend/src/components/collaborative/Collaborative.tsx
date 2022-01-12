@@ -1,27 +1,25 @@
-import React, { memo, useState, useEffect } from 'react';
-import internal from 'stream';
+import { memo, useState, useEffect } from 'react';
 import {
     NavigationSettings,
-    Coordinates,
     Direction,
     CellHintAnnotation,
     Clue,
     CollaborativeGame,
     CrosswordHint
-} from '../shared/types';
+} from '../shared/types/types';
 import Crossword from '../shared/Crossword';
 import './Collaborative.css';
 import { CrosswordHintRow } from '../shared/CrosswordHintRow';
+import { SendMessageFn } from '../shared/types/socketTypes';
 
 interface CollaborativeProps {
     game: CollaborativeGame;
-    clientRef: any;
+    sendMessage: SendMessageFn;
 }
 export const Collaborative = memo(function Collaborative(
     props: CollaborativeProps
 ) {
-    const { game, clientRef } = props;
-    const [error, setError] = useState(null);
+    const { game, sendMessage } = props;
     const [isLoaded, setIsLoaded] = useState(false);
     const [clues, setClues] = useState<CrosswordHint[]>([]);
     const [crosswordSize, setCrosswordSize] = useState(0);
@@ -67,10 +65,11 @@ export const Collaborative = memo(function Collaborative(
                         ...inputCellsTemp[initialRowIndex][i],
                         across: {
                             hintNumber: clue.hintNumber,
-                            isStart: i == initialColIndex
+                            isStart: i === initialColIndex
                         },
                         isValid:
-                            inputCellsTemp[initialRowIndex][i].down != undefined
+                            inputCellsTemp[initialRowIndex][i].down !==
+                            undefined
                     };
                 }
             } else {
@@ -83,10 +82,10 @@ export const Collaborative = memo(function Collaborative(
                         ...inputCellsTemp[i][initialColIndex],
                         down: {
                             hintNumber: clue.hintNumber,
-                            isStart: i == initialRowIndex
+                            isStart: i === initialRowIndex
                         },
                         isValid:
-                            inputCellsTemp[i][initialColIndex].across !=
+                            inputCellsTemp[i][initialColIndex].across !==
                             undefined
                     };
                 }
@@ -94,8 +93,6 @@ export const Collaborative = memo(function Collaborative(
         });
         setInputCellsArray(inputCellsTemp);
     }, [game.crossword]);
-
-    useEffect(() => {}, [game.teamAnswers]);
 
     return (
         <div>
@@ -109,7 +106,7 @@ export const Collaborative = memo(function Collaborative(
                             setNavSettings={setNavSettings}
                             navSettings={navSettings}
                             answers={game.teamAnswers.answers}
-                            clientRef={clientRef}
+                            sendMessage={sendMessage}
                             gameId={game.gameId}
                         />
                     </div>
@@ -118,45 +115,41 @@ export const Collaborative = memo(function Collaborative(
                     <div className="clues-div">
                         <div className="across-clues-div">
                             <p className="clues-heading">Across Clues</p>
-                            {clues.map((clue: Clue, index) => {
-                                if (clue.direction === Direction.ACROSS) {
-                                    return (
-                                        <CrosswordHintRow
-                                            clue={clue}
-                                            navSettings={navSettings}
-                                            setNavSettings={setNavSettings}
-                                            annotationData={
-                                                inputCellsArray[
-                                                    navSettings.coordinates.row
-                                                ][navSettings.coordinates.col]
-                                            }
-                                            textClassName={'clue-text'}
-                                            key={index}
-                                        />
-                                    );
-                                }
-                            })}
+                            {clues.map((clue: Clue, index) =>
+                                clue.direction === Direction.ACROSS ? (
+                                    <CrosswordHintRow
+                                        clue={clue}
+                                        navSettings={navSettings}
+                                        setNavSettings={setNavSettings}
+                                        annotationData={
+                                            inputCellsArray[
+                                                navSettings.coordinates.row
+                                            ][navSettings.coordinates.col]
+                                        }
+                                        textClassName={'clue-text'}
+                                        key={index}
+                                    />
+                                ) : undefined
+                            )}
                         </div>
                         <div className="down-clues-div">
                             <p className="clues-heading">Down Clues</p>
-                            {clues.map((clue: Clue, index) => {
-                                if (clue.direction == Direction.DOWN) {
-                                    return (
-                                        <CrosswordHintRow
-                                            clue={clue}
-                                            navSettings={navSettings}
-                                            setNavSettings={setNavSettings}
-                                            annotationData={
-                                                inputCellsArray[
-                                                    navSettings.coordinates.row
-                                                ][navSettings.coordinates.col]
-                                            }
-                                            textClassName={'clue-text'}
-                                            key={index}
-                                        />
-                                    );
-                                }
-                            })}
+                            {clues.map((clue: Clue, index) =>
+                                clue.direction === Direction.DOWN ? (
+                                    <CrosswordHintRow
+                                        clue={clue}
+                                        navSettings={navSettings}
+                                        setNavSettings={setNavSettings}
+                                        annotationData={
+                                            inputCellsArray[
+                                                navSettings.coordinates.row
+                                            ][navSettings.coordinates.col]
+                                        }
+                                        textClassName={'clue-text'}
+                                        key={index}
+                                    />
+                                ) : undefined
+                            )}
                         </div>
                     </div>
                 </div>

@@ -1,11 +1,16 @@
 import { ChangeEvent, memo, useCallback, useState } from 'react';
-import { GameState } from '../shared/gameState';
+import { GameState } from '../shared/types/gameState';
+import {
+    SendMessageFn,
+    SocketEndpoint,
+    SocketSubscription
+} from '../shared/types/socketTypes';
 
 interface JoinGameInputProps {
     setGameState: (state: GameState) => void;
     clientId: string;
     addSubscription: (subscription: string) => void;
-    clientRef: any;
+    sendMessage: SendMessageFn;
     hasFailed: boolean;
 }
 
@@ -13,7 +18,7 @@ export const JoinGameInput = memo(function JoinGameInputFn(
     props: JoinGameInputProps
 ) {
     const [gameId, setGameId] = useState('');
-    const { setGameState, clientId, addSubscription, clientRef, hasFailed } =
+    const { setGameState, clientId, addSubscription, sendMessage, hasFailed } =
         props;
 
     const handleChange = useCallback(
@@ -24,16 +29,14 @@ export const JoinGameInput = memo(function JoinGameInputFn(
     );
 
     const joinGame = useCallback(() => {
-        addSubscription('queue/game/' + gameId);
-        clientRef.sendMessage(
-            '/app/connect/' + gameId,
-            JSON.stringify({ playerId: clientId })
+        addSubscription(SocketSubscription.GAME_PREFIX + gameId);
+        sendMessage(
+            SocketEndpoint.CONNECT,
+            JSON.stringify({ playerId: clientId }),
+            gameId
         );
-    }, [addSubscription, gameId, clientRef, clientId]);
+    }, [addSubscription, gameId, sendMessage, clientId]);
 
-    const cardButtonStyles = `bg-white border border-gray-200 rounded text-xl py-32
-                        flex-grow shadow hover:bg-blue-50 focus:ring-2
-                        focus:ring-blue-700 focus:bg-blue-50`;
     return (
         <div className={`max-w-2xl m-auto mt-20 space-y-8`}>
             {/* settings component there is just temporary */}
