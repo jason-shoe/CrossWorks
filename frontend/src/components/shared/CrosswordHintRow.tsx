@@ -1,12 +1,11 @@
 import { memo, useCallback, useMemo } from 'react';
-import { Row } from 'rsuite';
 import styles from './Crossword.module.scss';
 import {
     Clue,
     NavigationSettings,
     Direction,
     CellHintAnnotation
-} from './types';
+} from './types/types';
 
 interface CrosswordHintRowProps {
     clue: Clue;
@@ -23,26 +22,32 @@ export const CrosswordHintRow = memo((props: CrosswordHintRowProps) => {
     const onClick = useCallback(() => {
         setNavSettings({
             direction:
-                clue.direction == Direction.ACROSS
+                clue.direction === Direction.ACROSS
                     ? Direction.ACROSS
                     : Direction.DOWN,
             coordinates: { row: clue.row, col: clue.col }
         });
-    }, [navSettings, setNavSettings]);
+    }, [clue.col, clue.direction, clue.row, setNavSettings]);
 
     const additionalStyling = useMemo(() => {
         if (
-            (annotationData.across.hintNumber == clue.hintNumber &&
-                clue.direction == Direction.ACROSS) ||
-            (annotationData.down.hintNumber == clue.hintNumber &&
-                clue.direction == Direction.DOWN)
+            (annotationData.across.hintNumber === clue.hintNumber &&
+                clue.direction === Direction.ACROSS) ||
+            (annotationData.down.hintNumber === clue.hintNumber &&
+                clue.direction === Direction.DOWN)
         ) {
-            if (clue.direction == navSettings.direction) {
+            if (clue.direction === navSettings.direction) {
                 return styles.highlightPrimary;
             }
             return styles.highlightSecondary;
         }
-    }, [annotationData, clue.direction, styles, navSettings]);
+    }, [
+        annotationData.across.hintNumber,
+        annotationData.down.hintNumber,
+        clue.hintNumber,
+        clue.direction,
+        navSettings.direction
+    ]);
 
     return (
         <div className={styles.crosswordHint} onClick={onClick}>

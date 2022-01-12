@@ -1,66 +1,50 @@
-import React, { memo, useState, useEffect, useCallback } from 'react';
+import { memo, useEffect, useCallback } from 'react';
 import { UserEntry } from '../shared/UserEntry';
 import Calendar from '../shared/Calendar';
-import { CollaborativeGame } from '../shared/types';
-import { InputNumber, Message } from 'rsuite';
+import { CollaborativeGame } from '../shared/types/types';
+import { InputNumber } from 'rsuite';
 import { UserInfo } from '@rsuite/icons';
 import styles from './Settings.module.scss';
-import { request } from '../shared/util/request';
-import { useParams } from 'react-router-dom';
-import {
-    HttpResponse,
-    HttpPlayerId,
-    isHttpPlayerId,
-    MessageType
-} from '../shared/httpTypes';
+import { SendMessageFn, SocketEndpoint } from '../shared/types/socketTypes';
 
 interface SettingsProps {
     isCollaborative: boolean;
-    clientRef: any;
+    sendMessage: SendMessageFn;
     clientId: string;
     game?: CollaborativeGame;
-    subscriptions: string[];
-    addSubscription: (subscription: string) => void;
 }
 
 export const Settings = memo(function SettingsFn(props: SettingsProps) {
-    const {
-        isCollaborative,
-        game,
-        addSubscription,
-        subscriptions,
-        clientRef,
-        clientId
-    } = props;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { isCollaborative, game, sendMessage, clientId } = props;
 
     const setCrosswordId = useCallback(
         (crosswordId: string) => {
-            if (game != undefined) {
-                clientRef.sendMessage(
-                    '/app/update/game-crossword/' + game.gameId,
-                    crosswordId
+            if (game !== undefined) {
+                sendMessage(
+                    SocketEndpoint.SET_CROSSWORD,
+                    crosswordId,
+                    game.gameId
                 );
             }
         },
-        [game, clientRef]
+        [game, sendMessage]
     );
 
     const startGame = useCallback(() => {
-        if (game != undefined) {
-            clientRef.sendMessage('/app/update/start-game/' + game.gameId);
+        if (game !== undefined) {
+            sendMessage(SocketEndpoint.START_GAME, undefined, game.gameId);
         }
-    }, [clientRef, game]);
+    }, [game, sendMessage]);
 
     useEffect(() => {
-        if (clientId) {
-            if (game == undefined) {
-                clientRef.sendMessage(
-                    '/app/create',
-                    JSON.stringify({ playerId: clientId })
-                );
-            }
+        if (clientId && game === undefined) {
+            sendMessage(
+                SocketEndpoint.CREATE_GAME,
+                JSON.stringify({ playerId: clientId })
+            );
         }
-    }, [clientId, clientRef]);
+    }, [clientId, game, sendMessage]);
 
     return (
         <div>
@@ -92,12 +76,15 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
                             <h2>Party {game ? game.playerIds.length : 0}</h2>
 
                             {game &&
-                                game.playerIds.map((elem: string) => (
-                                    <UserEntry
-                                        name={elem}
-                                        icon={<UserInfo />}
-                                    />
-                                ))}
+                                game.playerIds.map(
+                                    (elem: string, index: number) => (
+                                        <UserEntry
+                                            name={elem}
+                                            icon={<UserInfo />}
+                                            key={index}
+                                        />
+                                    )
+                                )}
                         </div>
                     </div>
                     <button

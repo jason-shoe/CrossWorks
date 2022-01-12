@@ -1,7 +1,8 @@
-import React, { memo, useState, useEffect } from 'react';
-import { CrosswordData } from '../shared/types';
+import { memo, useState, useEffect } from 'react';
+import { BACKEND_URL } from '../shared/types/httpTypes';
+import { CrosswordData } from '../shared/types/types';
 import { request } from '../shared/util/request';
-import styles from './styles/Competitive.module.scss';
+// import styles from './styles/Competitive.module.scss';
 
 export const Competitive = memo(function Competitive() {
     const [crosswordData, setCrosswordData] = useState<
@@ -9,9 +10,7 @@ export const Competitive = memo(function Competitive() {
     >();
 
     useEffect(() => {
-        request<CrosswordData>(
-            'http://localhost:8080/collaborative-game/sample-crossword'
-        )
+        request<CrosswordData>(BACKEND_URL + 'sample-crossword')
             .then((data) => {
                 setCrosswordData(data);
             })

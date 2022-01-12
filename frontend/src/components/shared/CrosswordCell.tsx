@@ -1,6 +1,10 @@
 import { memo, useMemo, useCallback } from 'react';
 import styles from './Crossword.module.scss';
-import { CellHintAnnotation, NavigationSettings, Direction } from './types';
+import {
+    CellHintAnnotation,
+    NavigationSettings,
+    Direction
+} from './types/types';
 
 interface CrosswordCellProps {
     row: number;
@@ -20,8 +24,8 @@ export const CrosswordCell = memo(function Crossword(
 
     const isHighlightedCell = useMemo(
         () =>
-            row == navSettings.coordinates.row &&
-            col == navSettings.coordinates.col,
+            row === navSettings.coordinates.row &&
+            col === navSettings.coordinates.col,
         [row, col, navSettings.coordinates]
     );
 
@@ -31,16 +35,16 @@ export const CrosswordCell = memo(function Crossword(
         } else if (isHighlightedCell) {
             return styles.highlightedCell;
         } else if (
-            (row == navSettings.coordinates.row &&
-                navSettings.direction == Direction.ACROSS) ||
-            (col == navSettings.coordinates.col &&
-                navSettings.direction == Direction.DOWN)
+            (row === navSettings.coordinates.row &&
+                navSettings.direction === Direction.ACROSS) ||
+            (col === navSettings.coordinates.col &&
+                navSettings.direction === Direction.DOWN)
         ) {
             return styles.highlightedClue;
         } else {
             return styles.inputCell;
         }
-    }, [annotationData, navSettings, styles, row, col, isHighlightedCell]);
+    }, [annotationData, navSettings, row, col, isHighlightedCell]);
 
     const onClick = useCallback(
         () =>
@@ -51,7 +55,7 @@ export const CrosswordCell = memo(function Crossword(
                 },
                 // flips the direction if you click on the higlighted cell
                 direction: isHighlightedCell
-                    ? navSettings.direction == Direction.ACROSS
+                    ? navSettings.direction === Direction.ACROSS
                         ? Direction.DOWN
                         : Direction.ACROSS
                     : navSettings.direction
@@ -61,12 +65,12 @@ export const CrosswordCell = memo(function Crossword(
 
     const annotation = useMemo(() => {
         if (
-            annotationData.across != undefined &&
+            annotationData.across !== undefined &&
             annotationData.across.isStart
         ) {
             return annotationData.across.hintNumber;
         } else if (
-            annotationData.down != undefined &&
+            annotationData.down !== undefined &&
             annotationData.down.isStart
         ) {
             return annotationData.down.hintNumber;
@@ -75,7 +79,7 @@ export const CrosswordCell = memo(function Crossword(
     }, [annotationData]);
 
     const processedValue = useMemo(() => {
-        if (value == 'BLOCK' || value == 'EMPTY') {
+        if (value === 'BLOCK' || value === 'EMPTY') {
             return undefined;
         }
         return value;
