@@ -1,14 +1,20 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { memo, useState, useEffect, useCallback } from 'react';
 import { UserEntry } from '../shared/UserEntry';
 import Calendar from '../shared/Calendar';
 import { CollaborativeGame } from '../shared/types';
-import { InputNumber } from 'rsuite';
+import { InputNumber, Message } from 'rsuite';
 import { UserInfo } from '@rsuite/icons';
 // @ts-ignore
 import SockJsClient from 'react-stomp';
 import styles from './Settings.module.scss';
 import { request } from '../shared/util/request';
 import { useParams } from 'react-router-dom';
+import {
+    HttpResponse,
+    HttpPlayerId,
+    isHttpPlayerId,
+    MessageType
+} from '../shared/httpTypes';
 
 interface SettingsProps {
     isCollaborative: boolean;
@@ -18,126 +24,128 @@ interface SettingsUrlParams {
     gameId?: string;
 }
 
+type HttpMessageType = HttpResponse<HttpPlayerId | CollaborativeGame>;
+
 export const Settings = memo(function SettingsFn(props: SettingsProps) {
     const [clientConnected, setClientConnected] = useState(false);
     const [clientId, setClientId] = useState<String | undefined>();
-    const [messages, setMessages] = useState<String[]>([]);
     const [clientRef, setClientRef] = useState<any | undefined>(undefined);
     const [game, setGame] = useState<CollaborativeGame | undefined>(undefined);
-
-    const { isCollaborative } = props;
+    const [subscriptions, setSubscriptions] = useState<string[]>([
+        '/users/queue/messages'
+    ]);
     let { gameId } = useParams<SettingsUrlParams>();
 
-    const addPlayer = (playerId: string) => {
-        setGame((prevGame: CollaborativeGame | undefined) => {
-            return prevGame
-                ? {
-                      ...prevGame,
-                      playerIds: [...prevGame.playerIds, playerId]
-                  }
-                : undefined;
-        });
-    };
-    const onMessageReceive = (msg: string) => {
-        if (clientId) {
-            addPlayer(msg);
-        } else {
-            setClientId(msg);
-        }
-    };
-    const sendHello = () => {
-        try {
-            clientRef.sendMessage('/app/hello');
-            return true;
-        } catch (e) {
-            return false;
+    const { isCollaborative } = props;
+
+    const addSubscription = useCallback(
+        (endpoint: string) => {
+            setSubscriptions([...subscriptions, endpoint]);
+        },
+        [subscriptions, gameId]
+    );
+
+    const setCrosswordId = useCallback(
+        (crosswordId: string) => {
+            if (game != undefined) {
+                clientRef.sendMessage(
+                    '/app/update/game-crossword/' + game.gameId,
+                    crosswordId
+                );
+            }
+        },
+        [game, clientRef]
+    );
+
+    const onMessageReceive = (msg: HttpMessageType) => {
+        console.log('this is the message', msg);
+        const messageType = msg.headers.type[0];
+        console.log(
+            isHttpPlayerId(msg.body),
+            messageType == MessageType.GET_PLAYER_ID
+        );
+        if (isHttpPlayerId(msg.body)) {
+            if (messageType == MessageType.GET_PLAYER_ID) {
+                setClientId(msg.body);
+            }
+        } else if (messageType == MessageType.CREATE_GAME) {
+            addSubscription('queue/game/' + msg.body.gameId);
+            setGame(msg.body);
+        } else if (messageType == MessageType.UPDATE_GAME) {
+            setGame(msg.body);
         }
     };
 
     useEffect(() => {
         if (clientId) {
             if (gameId != null) {
-                const requestOptions = {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        player: { playerId: clientId },
-                        gameId: gameId
-                    })
-                };
-                request<CollaborativeGame>(
-                    'http://localhost:8080/collaborative-game/connect',
-                    requestOptions
-                ).then((data: CollaborativeGame) => {
-                    console.log('THIS IS THE GAME', data);
-                    setGame(data);
-                });
+                addSubscription('queue/game/' + gameId);
+                clientRef.sendMessage(
+                    '/app/connect/' + gameId,
+                    JSON.stringify({ playerId: clientId })
+                );
             } else {
-                const requestOptions = {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ playerId: clientId })
-                };
-                request<CollaborativeGame>(
-                    'http://localhost:8080/collaborative-game/start',
-                    requestOptions
-                ).then((data) => {
-                    console.log('THIS IS TEHE GAME', data);
-                    setGame(data);
-                });
+                clientRef.sendMessage(
+                    '/app/create',
+                    JSON.stringify({ playerId: clientId })
+                );
             }
         }
-    }, [clientId]);
+    }, [clientId, gameId, clientRef]);
 
     return (
         <div>
             <SockJsClient
                 url="http://localhost:8080/gs-guide-websocket"
-                topics={['/topic/hello', '/user/topic/hello']}
-                onMessage={(msg: string) => {
-                    console.log('this is the message', msg);
-                    onMessageReceive(msg);
-                }}
-                ref={(client: any) => {
-                    setClientRef(client);
-                }}
+                topics={subscriptions}
+                onMessage={onMessageReceive}
+                ref={setClientRef}
                 onConnect={() => {
-                    console.log('successuflly connected to websocket');
-                    sendHello();
+                    clientRef.sendMessage('/app/getPlayerId');
                     setClientConnected(true);
                 }}
                 onDisconnect={() => setClientConnected(false)}
                 debug={false}
             />
-            {gameId && <p>from the url{gameId}</p>}
-            {game && <p>from the backend {game.gameId}</p>}
-            <div className={styles.settingsWrapper}>
-                <div>
-                    <h2>Select Crossword</h2>
-                    <Calendar />
-                </div>
-                <div className={styles.mainSettings}>
-                    <h2>Settings</h2>
-                    <div>
-                        <div className={styles.settingsField}>
-                            <p className={styles.settingsFieldLabel}>
-                                Time Limit
-                            </p>
-                            <InputNumber
-                                className={styles.settingsFieldInput}
+            {game && (
+                <div className={styles.settingsWrapper}>
+                    <div className={styles.gameId}>{game?.gameId}</div>
+                    <div className={styles.settingsMiddle}>
+                        <div>
+                            <h2>Select Crossword</h2>
+                            <Calendar
+                                crosswordId={game.crosswordId}
+                                setCrosswordId={setCrosswordId}
                             />
                         </div>
-                    </div>
-                </div>
-                <div>
-                    <h2>Party {game ? game.playerIds.length : 0}</h2>
+                        <div className={styles.mainSettings}>
+                            <h2>Settings</h2>
+                            <div>
+                                <div className={styles.settingsField}>
+                                    <p className={styles.settingsFieldLabel}>
+                                        Time Limit
+                                    </p>
+                                    <InputNumber
+                                        className={styles.settingsFieldInput}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h2>Party {game ? game.playerIds.length : 0}</h2>
 
-                    {game &&
-                        game.playerIds.map((elem: string) => (
-                            <UserEntry name={elem} icon={<UserInfo />} />
-                        ))}
+                            {game &&
+                                game.playerIds.map((elem: string) => (
+                                    <UserEntry
+                                        name={elem}
+                                        icon={<UserInfo />}
+                                    />
+                                ))}
+                        </div>
+                    </div>
+                    <button className={styles.gameStartButton}>Start</button>
                 </div>
-            </div>
+            )}
         </div>
     );
 });

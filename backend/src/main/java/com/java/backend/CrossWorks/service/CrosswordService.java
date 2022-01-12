@@ -1,6 +1,8 @@
 package com.java.backend.CrossWorks.service;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.java.backend.CrossWorks.collaborative.CollaborativeGame;
+import com.java.backend.CrossWorks.exceptions.InvalidParamException;
 import com.java.backend.CrossWorks.models.Crossword;
 import com.java.backend.CrossWorks.storage.CrosswordStorage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,10 +10,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 import java.util.function.Consumer;
 
 @Service
@@ -20,8 +19,12 @@ public class CrosswordService {
     @Autowired
     private CrosswordStorage repo;
 
-    public Crossword getCrossword(String crosswordId) {
-        return (Crossword) repo.findAllById(Collections.singleton(crosswordId));
+    public Crossword getCrossword(String crosswordId) throws InvalidParamException {
+        Optional<Crossword> val = repo.findById(crosswordId);
+        if (val.isPresent()) {
+            return val.get();
+        }
+        throw new InvalidParamException("Crossword ID doesn't exist in getCrossword");
     }
 
     public Crossword getFirst() {

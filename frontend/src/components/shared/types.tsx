@@ -1,6 +1,7 @@
 export interface CollaborativeGame {
     gameId: string;
     playerIds: string[];
+    crosswordId: string;
 }
 
 export interface CrosswordData {

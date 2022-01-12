@@ -29,16 +29,19 @@ public class CrossWorksApplication {
 		return (args) -> {
 			ObjectMapper mapper = new ObjectMapper();
 			TypeReference<Crossword> typeReference = new TypeReference<Crossword>(){};
-			InputStream inputStream = TypeReference.class.getResourceAsStream("/sampleCrossword.json");
-			try {
-				Crossword data = mapper.readValue(inputStream,typeReference);
-				data.fillAnswers();
-				data.getBoard().printBoard();
-				repository.save(data);
-				log.info("crossword data saved");
-			} catch (IOException e){
-				log.info("didn't work");
-				log.info(e.toString());
+			String[] crosswordFilenames = {"/sampleCrossword.json", "/sampleCrossword2.json"};
+			for (String filename: crosswordFilenames) {
+				InputStream inputStream = TypeReference.class.getResourceAsStream(filename);
+				try {
+					Crossword data = mapper.readValue(inputStream,typeReference);
+					data.fillAnswers();
+					data.getBoard().printBoard();
+					repository.save(data);
+					log.info("crossword data saved");
+				} catch (IOException e){
+					log.info("didn't work");
+					log.info(e.toString());
+				}
 			}
 
 			log.info("Crossword files found with findAll()");
