@@ -36,12 +36,12 @@ public class CollaborativeGame extends Game{
     }
 
     public void addPlayer(Player player) {
-        players.addElement(player);
+        if (!players.contains(player)){
+            players.addElement(player);
+        }
     }
 
     public boolean hasPlayer(Player player) {
-        System.out.print("Seeing if has it ");
-        System.out.print( this.getGameId());
         for (Player arrayPlayer: players) {
             System.out.print(arrayPlayer.getPlayerId());
             if (arrayPlayer.getPlayerId().equals(player.getPlayerId())) {
@@ -51,6 +51,10 @@ public class CollaborativeGame extends Game{
         }
         System.out.println();
         return false;
+    }
+
+    public void removePlayer(Player player) {
+        players.remove(player);
     }
 
     public Vector<String> getPlayerIds() {

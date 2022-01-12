@@ -33,6 +33,13 @@ public class Game {
         return gameId;
     }
 
+    public String getCrosswordId() {
+        if (crossword != null) {
+            return crossword.getCrosswordId();
+        }
+        return "";
+    }
+
     public void startGame() {
         status = GameStatus.IN_PROGRESS;
     }

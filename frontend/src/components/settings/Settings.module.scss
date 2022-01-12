@@ -1,32 +1,46 @@
 .settingsWrapper {
-    display: flex;
     width: 90%;
     margin: 5%;
-    border: 1px solid black;
 
-    > div {
-        border: 1px solid black;
-        padding: 10px;
-
-        > h2 {
-            margin-top: 10px;
-            text-align: left;
-        }
+    .gameId {
+        text-align: center;
     }
 
-    .mainSettings {
-        flex-grow: 1;
+    .gameStartButton {
+        width: 100px;
+        margin: 0 auto;
+        background-color: green;
     }
 
-    .settingsField {
+    .settingsMiddle {
         display: flex;
 
-        .settingsFieldLabel {
-            width: 100px;
+        border: 1px solid black;
+
+        > div {
+            border: 1px solid black;
+            padding: 10px;
+
+            > h2 {
+                margin-top: 10px;
+                text-align: left;
+            }
         }
 
-        .settingsFieldInput {
-            margin: auto 0;
+        .mainSettings {
+            flex-grow: 1;
+        }
+
+        .settingsField {
+            display: flex;
+
+            .settingsFieldLabel {
+                width: 100px;
+            }
+
+            .settingsFieldInput {
+                margin: auto 0;
+            }
         }
     }
 }

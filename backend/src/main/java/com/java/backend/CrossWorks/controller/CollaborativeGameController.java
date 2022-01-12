@@ -16,7 +16,11 @@ import com.java.backend.CrossWorks.service.Views;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,21 +57,42 @@ public class CollaborativeGameController {
         return crosswordService.getDates();
     }
 
-    @PostMapping("/start")
-    public ResponseEntity<CollaborativeGame> start(@RequestBody Player player) {
-        return ResponseEntity.ok(gameService.findPlayersGame(player));
+    @GetMapping("/games")
+    @ResponseBody
+    public Vector<CollaborativeGame> getAllGames() {
+        return gameService.getAllGames();
     }
 
-    @PostMapping("/connect")
-    public ResponseEntity<CollaborativeGame> connect(@RequestBody ConnectRequest request) throws InvalidParamException {
-        log.info("connect request: {}", request);
-        CollaborativeGame currentGame = gameService.connectToGame(request.getPlayer(), request.getGameId());
-        for (String playerId: currentGame.getPlayerIds()) {
-            if (!playerId.equals(request.getPlayer().getPlayerId())) {
-                log.info("Sending to {}", playerId);
-                simpMessagingTemplate.convertAndSendToUser(playerId, "/topic/hello", request.getPlayer().getPlayerId());
-            }
-        }
-        return ResponseEntity.ok(currentGame);
+    @DeleteMapping("/delete-games")
+    public void deleteAllGames() {
+       gameService.deleteAllGames();
+    }
+
+    @MessageMapping("/create")
+    public void create(@RequestBody Player player) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("type", "createGame");
+        simpMessagingTemplate.convertAndSendToUser(player.getPlayerId(), "/queue/messages", ResponseEntity.ok().headers(responseHeaders).body(gameService.findOrCreateGame(player)));
+    }
+
+    @MessageMapping("connect/{gameId}")
+    @SendTo("queue/game/{gameId}")
+    public ResponseEntity<CollaborativeGame> connect(@DestinationVariable String gameId, @RequestBody Player player) throws InvalidParamException {
+        log.info("connect request: {}", gameId, player);
+        CollaborativeGame currentGame = gameService.connectToGame(player, gameId);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("type", "updateGame");
+        return ResponseEntity.ok().headers(responseHeaders).body(currentGame);
+    }
+
+    @MessageMapping("update/game-crossword/{gameId}")
+    @SendTo("queue/game/{gameId}")
+    public ResponseEntity<CollaborativeGame> updateGameCrossword(@DestinationVariable String gameId, @RequestBody String crosswordId) throws InvalidParamException {
+        log.info("Update Game Crossword: {}", gameId, crosswordId);
+        Crossword selectedCrossword = crosswordService.getCrossword(crosswordId);
+        CollaborativeGame currentGame = gameService.setCrossword(selectedCrossword, gameId);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("type", "updateGame");
+        return ResponseEntity.ok().headers(responseHeaders).body(currentGame);
     }
 }

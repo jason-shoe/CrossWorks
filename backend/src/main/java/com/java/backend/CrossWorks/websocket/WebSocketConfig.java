@@ -24,14 +24,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
          * Broker that just handles sending a message back to a client
          * https://www.ietf.org/archive/id/draft-hapner-hybi-messagebroker-subprotocol-00.html
          */
-        config.enableSimpleBroker("/topic");
+        // this is how hello messages get sent back
+//        config.enableSimpleBroker("/topic");
         /*
          * This differentiates message-handeling methods for the application
          * level vs messages to be routed to the broker to broadcast to subscribed clients.
          * bound for functions with MessageMapping
          * https://github.com/lahsivjar/spring-websocket-template/blob/master/with-sockjs/src/main/java/lahsivjar/spring/websocket/template/WebSocketConfig.java
          */
+//        config.setApplicationDestinationPrefixes("/app");
+
+        config.enableSimpleBroker("queue");
         config.setApplicationDestinationPrefixes("/app");
+        config.setUserDestinationPrefix("/users");
     }
 
     @Override

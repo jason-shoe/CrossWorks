@@ -19,6 +19,10 @@ public class TeamAnswers {
     private int numCorrect;
     private int numCells;
 
+    public TeamAnswers() {
+        teamAnswersId = Datatype.TEAM_ANSWERS.prefix + UUID.randomUUID().toString();
+    }
+
     public TeamAnswers(Grid answers, int numCells) {
         this.teamAnswersId = Datatype.TEAM_ANSWERS.prefix + UUID.randomUUID().toString();
         this.answers = answers;
