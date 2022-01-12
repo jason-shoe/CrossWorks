@@ -4,7 +4,8 @@ import {
     Direction,
     Coordinates,
     Keys,
-    CellHintAnnotation
+    CellHintAnnotation,
+    Answers
 } from './types';
 import styles from './Crossword.module.scss';
 import { CrosswordCell } from './CrosswordCell';
@@ -14,29 +15,45 @@ interface CrosswordProps {
     inputCells: CellHintAnnotation[][];
     setNavSettings: (coords: NavigationSettings) => void;
     navSettings: NavigationSettings;
+    answers: Answers;
+    clientRef: any;
+    gameId: string;
+}
+
+function isEmpty(cell: string) {
+    return cell == 'EMPTY';
 }
 
 export const Crossword = memo(function Crossword(props: CrosswordProps) {
     // Setting the size of the crossword grid based on the API data retrieved
-    let { size, inputCells, setNavSettings, navSettings } = props;
+    let {
+        size,
+        inputCells,
+        setNavSettings,
+        navSettings,
+        answers,
+        clientRef,
+        gameId
+    } = props;
     const cells = [...Array(size).keys()];
-    const [crosswordCharacters, setCrosswordCharacters] = useState<
-        (string | undefined)[][]
-    >(
-        Array.from({ length: size }, () =>
-            Array.from({ length: size }, () => undefined)
-        )
-    );
+    // const [crosswordCharacters, setCrosswordCharacters] = useState<
+    //     (string | undefined)[][]
+    // >(
+    //     Array.from({ length: size }, () =>
+    //         Array.from({ length: size }, () => undefined)
+    //     )
+    // );
 
-    const handleChange = (
-        letter: string | undefined,
-        newSettings?: NavigationSettings
-    ) => {
-        let copy = [...crosswordCharacters];
-        // @ts-ignore
+    const handleChange = (letter: string, newSettings?: NavigationSettings) => {
         const settings = newSettings ?? navSettings;
-        copy[settings.coordinates.row][settings.coordinates.col] = letter;
-        setCrosswordCharacters(copy);
+        clientRef.sendMessage(
+            '/app/update/make-move/' + gameId,
+            JSON.stringify({
+                row: settings.coordinates.row,
+                col: settings.coordinates.col,
+                c: letter
+            })
+        );
     };
 
     const handleCoordinateChange = (shift: number, newDirection: Direction) => {
@@ -94,11 +111,9 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
                     return navSettings;
                 }
                 if (
-                    (crosswordCharacters[navSettings.coordinates.row][i] !=
-                        undefined &&
+                    (!isEmpty(answers.grid[navSettings.coordinates.row][i]) &&
                         considerFilled) ||
-                    crosswordCharacters[navSettings.coordinates.row][i] ==
-                        undefined
+                    isEmpty(answers.grid[navSettings.coordinates.row][i])
                 ) {
                     newSettings = {
                         coordinates: {
@@ -121,11 +136,9 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
                     return navSettings;
                 }
                 if (
-                    (crosswordCharacters[i][navSettings.coordinates.col] !=
-                        undefined &&
+                    (!isEmpty(answers.grid[i][navSettings.coordinates.col]) &&
                         considerFilled) ||
-                    crosswordCharacters[i][navSettings.coordinates.col] ==
-                        undefined
+                    isEmpty(answers.grid[i][navSettings.coordinates.col])
                 ) {
                     newSettings = {
                         coordinates: {
@@ -143,10 +156,11 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-        const wasFilled =
-            crosswordCharacters[navSettings.coordinates.row][
+        const wasFilled = !isEmpty(
+            answers.grid[navSettings.coordinates.row][
                 navSettings.coordinates.col
-            ] != undefined;
+            ]
+        );
         if (event.key == Keys.ARROW_UP) {
             handleCoordinateChange(-1, Direction.DOWN);
         } else if (event.key == Keys.ARROW_RIGHT) {
@@ -163,7 +177,7 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
             if (!wasFilled) {
                 settings = handleCoordinateChange(-1, navSettings.direction);
             }
-            handleChange(undefined, settings);
+            handleChange(' ', settings);
         }
     };
 
@@ -172,7 +186,7 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [navSettings, crosswordCharacters]);
+    }, [navSettings, answers]);
 
     return (
         <div>
@@ -191,9 +205,7 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
                                             }
                                             navSettings={navSettings}
                                             setNavSettings={setNavSettings}
-                                            value={
-                                                crosswordCharacters[row][col]
-                                            }
+                                            value={answers.grid[row][col]}
                                         />
                                     );
                                 })}

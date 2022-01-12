@@ -1,5 +1,6 @@
 package com.java.backend.CrossWorks.collaborative;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.java.backend.CrossWorks.models.Crossword;
 import com.java.backend.CrossWorks.models.Datatype;
 import com.java.backend.CrossWorks.models.GameStatus;
@@ -22,7 +23,7 @@ public class Game {
 
     public Game(String gameId) {
         this.gameId = gameId;
-        status = GameStatus.NOT_STARTED;
+        status = GameStatus.SETTINGS;
     }
 
     public void changeCrossword(Crossword crossword) {
@@ -40,8 +41,17 @@ public class Game {
         return "";
     }
 
+    @JsonIgnoreProperties("answers")
+    public Crossword getCrossword() {
+        return crossword;
+    }
+
+    public GameStatus getStatus() {
+        return status;
+    }
+
     public void startGame() {
-        status = GameStatus.IN_PROGRESS;
+        status = GameStatus.STARTED;
     }
 
     public void endGame() {

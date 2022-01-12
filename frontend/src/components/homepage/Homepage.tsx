@@ -1,37 +1,47 @@
 import React, { memo, useEffect, useState, useCallback } from 'react';
 import styles from './styles/Homepage.module.scss';
-import { useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom';
+import { GameState } from '../shared/gameState';
 
-export const Homepage = memo(function Homepage() {
+interface HomepageProps {
+    setGameState: (state: GameState) => void;
+}
+
+export const Homepage = memo(function Homepage({
+    setGameState
+}: HomepageProps) {
     const history = useHistory();
 
     const navigateToCreateGame = useCallback(
-        () => history.push('/createGame'),
-        []
+        () => setGameState(GameState.CREATE_GAME),
+        [setGameState]
     );
     const navigateToJoinGame = useCallback(
-        () => history.push('/collaborative-settings'),
-        []
+        () => setGameState(GameState.JOIN_GAME),
+        [setGameState]
     );
 
     const buttonStyles = `bg-white border border-gray-200 rounded text-xl py-32
                           flex-grow shadow hover:bg-blue-50 focus:ring-2
-                          focus:ring-blue-700`
+                          focus:ring-blue-700`;
     return (
         <div className={`max-w-2xl m-auto mt-20 space-y-8`}>
             {/* settings component there is just temporary */}
             <div className={`space-y-3`}>
-              <p className={`text-4xl font-bold text-blue-700`}>CrossWorks</p>
-              <p>Welcome to crosswords for teams! Select an option to get started:</p>
+                <p className={`text-4xl font-bold text-blue-700`}>CrossWorks</p>
+                <p>
+                    Welcome to crosswords for teams! Select an option to get
+                    started:
+                </p>
             </div>
-          <div className={`flex justify-between space-x-6`}>
-            <button className={buttonStyles} onClick={navigateToCreateGame}>
-              Create Game
-            </button>
-            <button className={buttonStyles} onClick={navigateToJoinGame}>
-              Join Game
-            </button>
-          </div>
+            <div className={`flex justify-between space-x-6`}>
+                <button className={buttonStyles} onClick={navigateToCreateGame}>
+                    Create Game
+                </button>
+                <button className={buttonStyles} onClick={navigateToJoinGame}>
+                    Join Game
+                </button>
+            </div>
         </div>
     );
 });

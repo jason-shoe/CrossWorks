@@ -8,6 +8,7 @@ import com.java.backend.CrossWorks.CrossWorksApplication;
 import com.java.backend.CrossWorks.collaborative.CollaborativeGame;
 import com.java.backend.CrossWorks.collaborative.Player;
 import com.java.backend.CrossWorks.controller.dto.ConnectRequest;
+import com.java.backend.CrossWorks.controller.dto.MoveRequest;
 import com.java.backend.CrossWorks.exceptions.InvalidParamException;
 import com.java.backend.CrossWorks.models.Crossword;
 import com.java.backend.CrossWorks.service.CrosswordService;
@@ -79,10 +80,17 @@ public class CollaborativeGameController {
     @SendTo("queue/game/{gameId}")
     public ResponseEntity<CollaborativeGame> connect(@DestinationVariable String gameId, @RequestBody Player player) throws InvalidParamException {
         log.info("connect request: {}", gameId, player);
-        CollaborativeGame currentGame = gameService.connectToGame(player, gameId);
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set("type", "updateGame");
-        return ResponseEntity.ok().headers(responseHeaders).body(currentGame);
+        try {
+            CollaborativeGame currentGame = gameService.connectToGame(player, gameId);
+            responseHeaders.set("type", "updateGame");
+            return ResponseEntity.ok().headers(responseHeaders).body(currentGame);
+        } catch(Exception e) {
+            responseHeaders.set("type", "badGameId");
+            ResponseEntity<CollaborativeGame> body = ResponseEntity.badRequest().headers(responseHeaders).body(null);
+            simpMessagingTemplate.convertAndSendToUser(player.getPlayerId(), "/queue/messages", body);
+            throw new InvalidParamException("Game ID doesn't exist in setCrossword - Controller");
+        }
     }
 
     @MessageMapping("update/game-crossword/{gameId}")
@@ -91,6 +99,25 @@ public class CollaborativeGameController {
         log.info("Update Game Crossword: {}", gameId, crosswordId);
         Crossword selectedCrossword = crosswordService.getCrossword(crosswordId);
         CollaborativeGame currentGame = gameService.setCrossword(selectedCrossword, gameId);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("type", "updateGame");
+        return ResponseEntity.ok().headers(responseHeaders).body(currentGame);
+    }
+
+    @MessageMapping("update/start-game/{gameId}")
+    @SendTo("queue/game/{gameId}")
+    public ResponseEntity<CollaborativeGame> updateStartGame(@DestinationVariable String gameId) throws InvalidParamException {
+        CollaborativeGame currentGame = gameService.startGame(gameId);
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("type", "startGame");
+        return ResponseEntity.ok().headers(responseHeaders).body(currentGame);
+    }
+
+    @MessageMapping("update/make-move/{gameId}")
+    @SendTo("queue/game/{gameId}")
+    public ResponseEntity<CollaborativeGame> makeMove(@DestinationVariable String gameId, @RequestBody MoveRequest request) throws Exception{
+        log.info("Make move: {}", request.row, request.col, request.c);
+        CollaborativeGame currentGame = gameService.makeMove(gameId, request.row, request.col, request.c);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("type", "updateGame");
         return ResponseEntity.ok().headers(responseHeaders).body(currentGame);

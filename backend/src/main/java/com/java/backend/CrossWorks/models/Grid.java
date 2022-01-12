@@ -46,6 +46,10 @@ public class Grid {
         board[x][y] = cell;
     }
 
+    public GridCell[][] getGrid() {
+        return board;
+    }
+
     public int getSize() {
         return size;
     }

@@ -84,6 +84,32 @@ public class CollaborativeGameService {
         throw new InvalidParamException("Game ID doesn't exist in setCrossword");
     }
 
+    public CollaborativeGame startGame(String gameId) throws InvalidParamException {
+        Optional<CollaborativeGame> val = repo.findById(gameId);
+        if (val.isPresent()) {
+            CollaborativeGame currentGame = val.get();
+            currentGame.startGame();
+            repo.save(currentGame);
+
+            return currentGame;
+        }
+
+        throw new InvalidParamException("Game ID doesn't exist in setCrossword");
+    }
+
+    public CollaborativeGame makeMove(String gameId, int row, int col, char c) throws Exception{
+        Optional<CollaborativeGame> val = repo.findById(gameId);
+        if (val.isPresent()) {
+            CollaborativeGame currentGame = val.get();
+            currentGame.makeMove(row, col, c);
+            repo.save(currentGame);
+
+            return currentGame;
+        }
+
+        throw new InvalidParamException("Game ID doesn't exist in setCrossword");
+    }
+
     // TODO: retrieve gameId from JPA storage
     // public CollaborativeGame connectToGame(CollaborativePlayer player2, String gameId) {
         // return the game retrieved from jpa storage
