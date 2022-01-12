@@ -10,7 +10,9 @@ export interface HttpResponse<T> {
 export enum MessageType {
     GET_PLAYER_ID = 'getPlayerId',
     UPDATE_GAME = 'updateGame',
-    CREATE_GAME = 'createGame'
+    CREATE_GAME = 'createGame',
+    BAD_GAME_ID = 'badGameId',
+    START_GAME = 'startGame'
 }
 
 export type HttpPlayerId = string;

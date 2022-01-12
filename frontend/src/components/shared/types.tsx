@@ -1,7 +1,23 @@
+export enum GameStatus {
+    SETTINGS = 'SETTINGS',
+    STARTED = 'STARTED',
+    FINISHED = 'FINISHED'
+}
+
 export interface CollaborativeGame {
     gameId: string;
     playerIds: string[];
     crosswordId: string;
+    gameStatus: GameStatus;
+    crossword: CrosswordData;
+    teamAnswers: { answers: Answers };
+}
+
+export interface Answers {
+    grid: string[][];
+    id: number;
+    numNonBlock: number;
+    size: number;
 }
 
 export interface CrosswordData {

@@ -1,30 +1,35 @@
-import React, { memo, useCallback, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { ChangeEvent, memo, useCallback, useState } from 'react';
 import { GameState } from '../shared/gameState';
 
-interface GameModeSelectionProps {
+interface JoinGameInputProps {
     setGameState: (state: GameState) => void;
+    clientId: string;
+    addSubscription: (subscription: string) => void;
+    clientRef: any;
+    hasFailed: boolean;
 }
 
-export const GameModeSelection = memo(function GameModeSelection({
-    setGameState
-}: GameModeSelectionProps) {
-    const [mode, setMode] = useState<GameState>();
-    const history = useHistory();
+export const JoinGameInput = memo(function JoinGameInputFn(
+    props: JoinGameInputProps
+) {
+    const [gameId, setGameId] = useState('');
+    const { setGameState, clientId, addSubscription, clientRef, hasFailed } =
+        props;
 
-    const createGame = useCallback(() => {
-        if (mode != undefined) {
-            setGameState(mode);
-        }
-    }, [mode, setGameState]);
+    const handleChange = useCallback(
+        (event: ChangeEvent<HTMLInputElement>) => {
+            setGameId(event.target.value);
+        },
+        [setGameId]
+    );
 
-    const handleSetCollab = useCallback(() => {
-        setMode(GameState.COLLABORATIVE_SETTINGS);
-    }, [setMode]);
-
-    const handleSetComp = useCallback(() => {
-        setMode(GameState.COMPETITIVE_SETTINGS);
-    }, [setMode]);
+    const joinGame = useCallback(() => {
+        addSubscription('queue/game/' + gameId);
+        clientRef.sendMessage(
+            '/app/connect/' + gameId,
+            JSON.stringify({ playerId: clientId })
+        );
+    }, [addSubscription, gameId, clientRef, clientId]);
 
     const cardButtonStyles = `bg-white border border-gray-200 rounded text-xl py-32
                         flex-grow shadow hover:bg-blue-50 focus:ring-2
@@ -34,18 +39,20 @@ export const GameModeSelection = memo(function GameModeSelection({
             {/* settings component there is just temporary */}
             <div className={`space-y-3`}>
                 <p className={`text-4xl font-bold text-blue-700`}>
-                    Choose your game mode
+                    Join a Game
                 </p>
                 <p>Description</p>
             </div>
             <div className={`flex justify-between space-x-6`}>
-                <button className={cardButtonStyles} onClick={handleSetCollab}>
-                    Collaborative
-                </button>
-                <button className={cardButtonStyles} onClick={handleSetComp}>
-                    Competitive
-                </button>
+                <div>Input Game ID</div>
+                <input
+                    className={`flex-grow border border-gray-200`}
+                    type="text"
+                    value={gameId}
+                    onChange={handleChange}
+                ></input>
             </div>
+            {hasFailed ? <p>failed</p> : <p>success</p>}
             <div className={`flex space-x-4 pt-16`}>
                 <button
                     className={`px-20 py-4 bg-blue-50 rounded-md text-blue-700 
@@ -57,14 +64,11 @@ export const GameModeSelection = memo(function GameModeSelection({
                 <button
                     className={`px-12 py-4 bg-blue-700 rounded-md text-white 
                         font-semibold text-lg disabled:opacity-50`}
-                    disabled={mode === undefined}
-                    onClick={createGame}
+                    onClick={joinGame}
                 >
-                    Create Game
+                    Join Game
                 </button>
             </div>
         </div>
     );
 });
-
-export default GameModeSelection;

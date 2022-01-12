@@ -70,6 +70,9 @@ public class TeamAnswers {
         answers.setCell(x, y, newValue);
     }
 
+    public Grid getAnswers() {
+        return answers;
+    }
     public boolean checkFinished() {
         return numCorrect == numCells;
     }

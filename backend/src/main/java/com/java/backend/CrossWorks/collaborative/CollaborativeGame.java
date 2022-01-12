@@ -65,8 +65,12 @@ public class CollaborativeGame extends Game{
         return player_ids;
     }
 
-    public void makeMove(Player player, int x, int y, char val) throws InvalidMove {
+    public void makeMove( int x, int y, char val) throws InvalidMove {
         answers.makeMove(x, y, GridCell.charValueOf(val), this.getCell(x, y));
+    }
+
+    public TeamAnswers getTeamAnswers() {
+        return answers;
     }
 
 }

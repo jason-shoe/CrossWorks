@@ -8,14 +8,14 @@ import {
     CellHintAnnotation
 } from './types';
 
-interface CrosswordHintProps {
+interface CrosswordHintRowProps {
     clue: Clue;
     navSettings: NavigationSettings;
     setNavSettings: (coords: NavigationSettings) => void;
     annotationData: CellHintAnnotation;
     textClassName: string;
 }
-export const CrosswordHint = memo((props: CrosswordHintProps) => {
+export const CrosswordHintRow = memo((props: CrosswordHintRowProps) => {
     let { clue, navSettings, setNavSettings, annotationData, textClassName } =
         props;
     var classNames = require('classnames');

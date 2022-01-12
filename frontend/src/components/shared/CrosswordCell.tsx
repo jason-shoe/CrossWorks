@@ -74,13 +74,20 @@ export const CrosswordCell = memo(function Crossword(
         return undefined;
     }, [annotationData]);
 
+    const processedValue = useMemo(() => {
+        if (value == 'BLOCK' || value == 'EMPTY') {
+            return undefined;
+        }
+        return value;
+    }, [value]);
+
     return (
         <div
             className={classNames(className, styles.inputCell)}
             onClick={onClick}
         >
             <p className={styles.hintAnnotation}>{annotation}</p>
-            <p className={styles.cellValue}>{value}</p>
+            <p className={styles.cellValue}>{processedValue}</p>
         </div>
     );
 });
