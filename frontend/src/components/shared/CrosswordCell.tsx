@@ -1,37 +1,50 @@
 import { memo, useMemo, useCallback } from 'react';
 import styles from './Crossword.module.scss';
+import { BoardVal } from './types/httpTypes';
 import {
     CellHintAnnotation,
-    NavigationSettings,
-    Direction
-} from './types/types';
+    Direction,
+    NavigationSettings
+} from '../shared/types/boardTypes';
 
 interface CrosswordCellProps {
     row: number;
     col: number;
     annotationData: CellHintAnnotation;
-    navSettings: NavigationSettings;
     setNavSettings: (coords: NavigationSettings) => void;
     value: string | undefined;
+    groundTruth: string | undefined;
+    navSettings?: NavigationSettings;
 }
 
 export const CrosswordCell = memo(function Crossword(
     props: CrosswordCellProps
 ) {
     var classNames = require('classnames');
-    let { row, col, annotationData, navSettings, setNavSettings, value } =
-        props;
+    let {
+        row,
+        col,
+        annotationData,
+        navSettings,
+        setNavSettings,
+        value,
+        groundTruth
+    } = props;
 
     const isHighlightedCell = useMemo(
         () =>
-            row === navSettings.coordinates.row &&
-            col === navSettings.coordinates.col,
-        [row, col, navSettings.coordinates]
+            navSettings
+                ? row === navSettings.coordinates.row &&
+                  col === navSettings.coordinates.col
+                : false,
+        [navSettings, row, col]
     );
 
     const className = useMemo(() => {
         if (!annotationData.isValid) {
             return styles.nonInputCell;
+        } else if (navSettings === undefined) {
+            return styles.inputCell;
         } else if (isHighlightedCell) {
             return styles.highlightedCell;
         } else if (
@@ -48,18 +61,20 @@ export const CrosswordCell = memo(function Crossword(
 
     const onClick = useCallback(
         () =>
-            setNavSettings({
-                coordinates: {
-                    row: row,
-                    col: col
-                },
-                // flips the direction if you click on the higlighted cell
-                direction: isHighlightedCell
-                    ? navSettings.direction === Direction.ACROSS
-                        ? Direction.DOWN
-                        : Direction.ACROSS
-                    : navSettings.direction
-            }),
+            navSettings
+                ? setNavSettings({
+                      coordinates: {
+                          row: row,
+                          col: col
+                      },
+                      // flips the direction if you click on the higlighted cell
+                      direction: isHighlightedCell
+                          ? navSettings.direction === Direction.ACROSS
+                              ? Direction.DOWN
+                              : Direction.ACROSS
+                          : navSettings.direction
+                  })
+                : undefined,
         [setNavSettings, row, col, isHighlightedCell, navSettings]
     );
 
@@ -78,12 +93,18 @@ export const CrosswordCell = memo(function Crossword(
         return undefined;
     }, [annotationData]);
 
-    const processedValue = useMemo(() => {
-        if (value === 'BLOCK' || value === 'EMPTY') {
-            return undefined;
+    const [processedValue, cellStyle] = useMemo(() => {
+        if (value === BoardVal.BLOCK) {
+            return [undefined, styles.cellValue];
         }
-        return value;
-    }, [value]);
+        if (groundTruth) {
+            if (value === groundTruth) {
+                return [value, styles.cellValue];
+            }
+            return [groundTruth, styles.cellValueIncorrect];
+        }
+        return [value, styles.cellValue];
+    }, [groundTruth, value]);
 
     return (
         <div
@@ -91,7 +112,7 @@ export const CrosswordCell = memo(function Crossword(
             onClick={onClick}
         >
             <p className={styles.hintAnnotation}>{annotation}</p>
-            <p className={styles.cellValue}>{processedValue}</p>
+            <p className={cellStyle}>{processedValue}</p>
         </div>
     );
 });

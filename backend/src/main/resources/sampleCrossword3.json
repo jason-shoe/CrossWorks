@@ -1,0 +1,24 @@
+{
+  "name": "sampleCrossword3",
+  "date": "2021-10-04",
+  "source": "NYT-mini",
+  "size": 1,
+  "clues": [
+    {
+      "hintNumber": 1,
+      "hint": "answer is A",
+      "row": 0,
+      "col": 0,
+      "answer": "A",
+      "direction": "ACROSS"
+    },
+    {
+      "hintNumber": 1,
+      "hint": "answer is A",
+      "row": 0,
+      "col": 0,
+      "answer": "A",
+      "direction": "DOWN"
+    }
+  ]
+}

@@ -1,27 +1,27 @@
 import React, { memo, useCallback, useState } from 'react';
-import { GameState } from '../shared/types/gameState';
+import { PageState } from '../shared/types/pageState';
 
 interface GameModeSelectionProps {
-    setGameState: (state: GameState) => void;
+    setPageState: (state: PageState) => void;
 }
 
 export const GameModeSelection = memo(function GameModeSelection({
-    setGameState
+    setPageState
 }: GameModeSelectionProps) {
-    const [mode, setMode] = useState<GameState>();
+    const [mode, setMode] = useState<PageState>();
 
     const createGame = useCallback(() => {
         if (mode !== undefined) {
-            setGameState(mode);
+            setPageState(mode);
         }
-    }, [mode, setGameState]);
+    }, [mode, setPageState]);
 
     const handleSetCollab = useCallback(() => {
-        setMode(GameState.COLLABORATIVE_SETTINGS);
+        setMode(PageState.COLLABORATIVE_SETTINGS);
     }, [setMode]);
 
     const handleSetComp = useCallback(() => {
-        setMode(GameState.COMPETITIVE_SETTINGS);
+        setMode(PageState.COMPETITIVE_SETTINGS);
     }, [setMode]);
 
     const cardButtonStyles = `bg-white border border-gray-200 rounded text-xl py-32
@@ -48,7 +48,7 @@ export const GameModeSelection = memo(function GameModeSelection({
                 <button
                     className={`px-20 py-4 bg-blue-50 rounded-md text-blue-700 
                           font-semibold text-lg`}
-                    onClick={() => setGameState(GameState.MAIN)}
+                    onClick={() => setPageState(PageState.MAIN)}
                 >
                     Back
                 </button>

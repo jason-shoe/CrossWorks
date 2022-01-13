@@ -1,4 +1,4 @@
-export enum GameState {
+export enum PageState {
     MAIN,
     CREATE_GAME,
     JOIN_GAME,

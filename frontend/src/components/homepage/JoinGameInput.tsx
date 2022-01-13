@@ -1,5 +1,5 @@
 import { ChangeEvent, memo, useCallback, useState } from 'react';
-import { GameState } from '../shared/types/gameState';
+import { PageState } from '../shared/types/pageState';
 import {
     SendMessageFn,
     SocketEndpoint,
@@ -7,7 +7,7 @@ import {
 } from '../shared/types/socketTypes';
 
 interface JoinGameInputProps {
-    setGameState: (state: GameState) => void;
+    setPageState: (state: PageState) => void;
     clientId: string;
     addSubscription: (subscription: string) => void;
     sendMessage: SendMessageFn;
@@ -18,7 +18,7 @@ export const JoinGameInput = memo(function JoinGameInputFn(
     props: JoinGameInputProps
 ) {
     const [gameId, setGameId] = useState('');
-    const { setGameState, clientId, addSubscription, sendMessage, hasFailed } =
+    const { setPageState, clientId, addSubscription, sendMessage, hasFailed } =
         props;
 
     const handleChange = useCallback(
@@ -60,7 +60,7 @@ export const JoinGameInput = memo(function JoinGameInputFn(
                 <button
                     className={`px-20 py-4 bg-blue-50 rounded-md text-blue-700 
                           font-semibold text-lg`}
-                    onClick={() => setGameState(GameState.MAIN)}
+                    onClick={() => setPageState(PageState.MAIN)}
                 >
                     Back
                 </button>

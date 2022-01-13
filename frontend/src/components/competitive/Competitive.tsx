@@ -1,6 +1,6 @@
 import { memo, useState, useEffect } from 'react';
 import { BACKEND_URL } from '../shared/types/httpTypes';
-import { CrosswordData } from '../shared/types/types';
+import { CrosswordData } from '../shared/types/backendTypes';
 import { request } from '../shared/util/request';
 // import styles from './styles/Competitive.module.scss';
 

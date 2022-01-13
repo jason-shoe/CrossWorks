@@ -1,11 +1,11 @@
 import { memo, useCallback, useMemo } from 'react';
 import styles from './Crossword.module.scss';
+import { Clue } from './types/backendTypes';
 import {
-    Clue,
-    NavigationSettings,
+    CellHintAnnotation,
     Direction,
-    CellHintAnnotation
-} from './types/types';
+    NavigationSettings
+} from '../shared/types/boardTypes';
 
 interface CrosswordHintRowProps {
     clue: Clue;
@@ -13,10 +13,17 @@ interface CrosswordHintRowProps {
     setNavSettings: (coords: NavigationSettings) => void;
     annotationData: CellHintAnnotation;
     textClassName: string;
+    finished: boolean;
 }
 export const CrosswordHintRow = memo((props: CrosswordHintRowProps) => {
-    let { clue, navSettings, setNavSettings, annotationData, textClassName } =
-        props;
+    let {
+        clue,
+        navSettings,
+        setNavSettings,
+        annotationData,
+        textClassName,
+        finished
+    } = props;
     var classNames = require('classnames');
 
     const onClick = useCallback(() => {
@@ -49,11 +56,17 @@ export const CrosswordHintRow = memo((props: CrosswordHintRowProps) => {
         navSettings.direction
     ]);
 
+    const textStyling = useMemo(
+        () => (finished ? styles.grayStyling : styles.blackStyling),
+        [finished]
+    );
+
     return (
         <div className={styles.crosswordHint} onClick={onClick}>
             <p
                 className={classNames(
                     additionalStyling,
+                    textStyling,
                     textClassName,
                     styles.hintNumber
                 )}
@@ -63,6 +76,7 @@ export const CrosswordHintRow = memo((props: CrosswordHintRowProps) => {
             <p
                 className={classNames(
                     additionalStyling,
+                    textStyling,
                     textClassName,
                     styles.hintText
                 )}

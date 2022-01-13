@@ -6,8 +6,8 @@ import Competitive from './competitive/Competitive';
 import GameModeSelection from './homepage/GameModeSelection';
 import Homepage from './homepage/Homepage';
 import Settings from './settings/Settings';
-import { GameState } from './shared/types/gameState';
-import { CollaborativeGame } from './shared/types/types';
+import { PageState } from './shared/types/pageState';
+import { CollaborativeGame, GameStatus } from './shared/types/backendTypes';
 import {
     HttpResponse,
     HttpPlayerId,
@@ -21,7 +21,7 @@ import { SocketEndpoint, SocketSubscription } from './shared/types/socketTypes';
 type HttpMessageType = HttpResponse<HttpPlayerId | CollaborativeGame>;
 
 const MainRouter = memo(function MainRouterFn() {
-    const [gameState, setGameState] = useState<GameState>(GameState.MAIN);
+    const [pageState, setPageState] = useState<PageState>(PageState.MAIN);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [clientConnected, setClientConnected] = useState(false);
@@ -35,6 +35,12 @@ const MainRouter = memo(function MainRouterFn() {
     const addSubscription = useCallback(
         (endpoint: string) => {
             setSubscriptions([...subscriptions, endpoint]);
+        },
+        [subscriptions]
+    );
+    const removeSubscription = useCallback(
+        (endpoint: string) => {
+            setSubscriptions(subscriptions.filter((val) => val !== endpoint));
         },
         [subscriptions]
     );
@@ -56,6 +62,19 @@ const MainRouter = memo(function MainRouterFn() {
         [clientRef]
     );
 
+    const leaveGame = useCallback(() => {
+        if (game) {
+            removeSubscription(SocketSubscription.GAME_PREFIX + game.gameId);
+            sendMessage(
+                SocketEndpoint.LEAVE_GAME,
+                JSON.stringify({ playerId: clientId }),
+                game.gameId
+            );
+            setPageState(PageState.MAIN);
+            setGame(undefined);
+        }
+    }, [clientId, game, removeSubscription, sendMessage]);
+
     const onMessageReceive = useCallback(
         (msg: HttpMessageType) => {
             console.log('this is the message', msg);
@@ -72,64 +91,77 @@ const MainRouter = memo(function MainRouterFn() {
             } else if (messageType === MessageType.UPDATE_GAME) {
                 setGame(msg.body);
             } else if (messageType === MessageType.BAD_GAME_ID) {
-                setGameState(GameState.BAD_JOIN_GAME);
+                setPageState(PageState.BAD_JOIN_GAME);
             } else if (messageType === MessageType.START_GAME) {
-                setGameState(GameState.COLLABORATIVE);
+                setGame(msg.body);
+                setPageState(PageState.COLLABORATIVE);
             }
         },
         [addSubscription]
     );
 
     useEffect(() => {
-        if (
-            (gameState === GameState.JOIN_GAME ||
-                gameState === GameState.BAD_JOIN_GAME) &&
-            game !== undefined
-        ) {
-            setGameState(GameState.COLLABORATIVE_SETTINGS);
+        if (game !== undefined) {
+            // trying to join, and successfully got a game
+            if (
+                pageState === PageState.JOIN_GAME ||
+                pageState === PageState.BAD_JOIN_GAME
+            ) {
+                if (game.status === GameStatus.SETTINGS) {
+                    setPageState(PageState.COLLABORATIVE_SETTINGS);
+                } else {
+                    setPageState(PageState.COLLABORATIVE);
+                }
+            } else if (game.status === GameStatus.SETTINGS) {
+                setPageState(PageState.COLLABORATIVE_SETTINGS);
+            }
         }
-    }, [game, gameState]);
+    }, [game, pageState]);
 
     const component = useMemo(() => {
-        if (gameState === GameState.MAIN) {
-            return <Homepage setGameState={setGameState} />;
-        } else if (gameState === GameState.CREATE_GAME) {
-            return <GameModeSelection setGameState={setGameState} />;
+        if (pageState === PageState.MAIN) {
+            return <Homepage setPageState={setPageState} />;
+        } else if (pageState === PageState.CREATE_GAME) {
+            return <GameModeSelection setPageState={setPageState} />;
         } else if (
-            gameState === GameState.JOIN_GAME ||
-            gameState === GameState.BAD_JOIN_GAME
+            pageState === PageState.JOIN_GAME ||
+            pageState === PageState.BAD_JOIN_GAME
         ) {
             return clientId ? (
                 <JoinGameInput
-                    setGameState={setGameState}
+                    setPageState={setPageState}
                     clientId={clientId}
                     addSubscription={addSubscription}
                     sendMessage={sendMessage}
-                    hasFailed={gameState === GameState.BAD_JOIN_GAME}
+                    hasFailed={pageState === PageState.BAD_JOIN_GAME}
                 />
             ) : undefined;
         } else if (
-            gameState === GameState.COMPETITIVE_SETTINGS ||
-            gameState === GameState.COLLABORATIVE_SETTINGS
+            pageState === PageState.COMPETITIVE_SETTINGS ||
+            pageState === PageState.COLLABORATIVE_SETTINGS
         ) {
             return clientId ? (
                 <Settings
                     isCollaborative={
-                        gameState === GameState.COLLABORATIVE_SETTINGS
+                        pageState === PageState.COLLABORATIVE_SETTINGS
                     }
                     sendMessage={sendMessage}
                     clientId={clientId}
                     game={game}
                 />
             ) : undefined;
-        } else if (gameState === GameState.COMPETITIVE) {
+        } else if (pageState === PageState.COMPETITIVE) {
             return <Competitive />;
         } else {
             return game ? (
-                <Collaborative game={game} sendMessage={sendMessage} />
+                <Collaborative
+                    game={game}
+                    sendMessage={sendMessage}
+                    leaveGame={leaveGame}
+                />
             ) : undefined;
         }
-    }, [gameState, clientId, addSubscription, sendMessage, game]);
+    }, [pageState, clientId, addSubscription, sendMessage, game, leaveGame]);
 
     return (
         <div>
