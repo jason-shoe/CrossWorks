@@ -9,7 +9,6 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 import javax.servlet.http.HttpSession;
 import java.security.Principal;
 import java.util.Map;
-import java.util.UUID;
 
 public class CustomHandshakeHandler extends DefaultHandshakeHandler {
     @Override
@@ -22,7 +21,7 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
         System.out.println("BEFORE HANDSHAKE 2");
         ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
         HttpSession session = servletRequest.getServletRequest().getSession();
-        String playerId = Datatype.COLLABORATIVE_PLAYER.prefix + session.getId();
+        String playerId = Datatype.PLAYER.prefix + session.getId();
         attributes.put("playerId", playerId);
         return new StompPrincipal(playerId);
     }

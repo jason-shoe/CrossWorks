@@ -1,24 +1,23 @@
 package com.java.backend.CrossWorks.collaborative;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.java.backend.CrossWorks.models.Crossword;
-import com.java.backend.CrossWorks.models.Datatype;
-import com.java.backend.CrossWorks.models.GameStatus;
-import com.java.backend.CrossWorks.models.GridCell;
+import com.java.backend.CrossWorks.models.*;
 
-import javax.persistence.*;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
 import java.util.UUID;
 
 @MappedSuperclass
 public class Game {
     @Id
-    private String gameId;
-    @ManyToOne(cascade = {CascadeType.ALL})
+    private final String gameId;
+    @ManyToOne
     private Crossword crossword;
     private GameStatus status;
 
     public Game() {
-        this(Datatype.GAME.prefix + UUID.randomUUID().toString());
+        this(Datatype.GAME.prefix + UUID.randomUUID());
     }
 
     public Game(String gameId) {
@@ -54,11 +53,39 @@ public class Game {
         status = GameStatus.STARTED;
     }
 
-    public void endGame() {
-        status = GameStatus.FINISHED;
+    public void pauseGame() {
+        status = GameStatus.PAUSED;
+    }
+
+    public void unpauseGame() {
+        status = GameStatus.STARTED;
+    }
+
+    public void markIncorrect() {
+        status = GameStatus.INCORRECT;
+    }
+
+    public void loseGame() {
+        status = GameStatus.LOST;
+    }
+
+    public void winGame() {
+        status = GameStatus.WON;
+    }
+
+    public void returnToSettings() {
+        status = GameStatus.SETTINGS;
     }
 
     public GridCell getCell(int x, int y) {
         return crossword.getAnswers().getCell(x, y);
+    }
+
+    public Grid getBoard() {
+        if (crossword != null) {
+            return crossword.getBoardProtected(status == GameStatus.LOST);
+        } else {
+            return null;
+        }
     }
 }

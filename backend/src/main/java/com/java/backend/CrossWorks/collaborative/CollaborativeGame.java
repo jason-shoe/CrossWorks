@@ -1,22 +1,28 @@
 package com.java.backend.CrossWorks.collaborative;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.java.backend.CrossWorks.exceptions.InvalidMove;
+import com.java.backend.CrossWorks.models.Crossword;
+import com.java.backend.CrossWorks.models.Datatype;
+import com.java.backend.CrossWorks.models.Grid;
+import com.java.backend.CrossWorks.models.GridCell;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import java.util.UUID;
 import java.util.Vector;
 
-import com.java.backend.CrossWorks.exceptions.InvalidMove;
-import com.java.backend.CrossWorks.models.*;
-
-import javax.persistence.*;
-
 @Entity
-public class CollaborativeGame extends Game{
-    @Column(columnDefinition="LONGTEXT")
-    private Vector<Player> players;
+public class CollaborativeGame extends Game {
+    @Column(columnDefinition = "LONGTEXT")
+    private final Vector<Player> players;
     @ManyToOne(cascade = {CascadeType.ALL})
     private TeamAnswers answers;
 
     public CollaborativeGame() {
-        super(Datatype.COLLABORATIVE_GAME.prefix + UUID.randomUUID().toString());
+        super(Datatype.COLLABORATIVE_GAME.prefix + UUID.randomUUID());
         players = new Vector();
     }
 
@@ -36,13 +42,13 @@ public class CollaborativeGame extends Game{
     }
 
     public void addPlayer(Player player) {
-        if (!players.contains(player)){
+        if (!players.contains(player)) {
             players.addElement(player);
         }
     }
 
     public boolean hasPlayer(Player player) {
-        for (Player arrayPlayer: players) {
+        for (Player arrayPlayer : players) {
             System.out.print(arrayPlayer.getPlayerId());
             if (arrayPlayer.getPlayerId().equals(player.getPlayerId())) {
                 System.out.println();
@@ -57,6 +63,17 @@ public class CollaborativeGame extends Game{
         players.remove(player);
     }
 
+    public void startGame() {
+        System.out.println("Start game thing");
+        super.startGame();
+        answers.clear();
+    }
+
+    @JsonIgnore
+    public boolean hasPlayers() {
+        return players.size() != 0;
+    }
+
     public Vector<String> getPlayerIds() {
         Vector<String> player_ids = new Vector(players.size());
         for (int x = 0; x < players.size(); x++) {
@@ -65,12 +82,23 @@ public class CollaborativeGame extends Game{
         return player_ids;
     }
 
-    public void makeMove( int x, int y, char val) throws InvalidMove {
+    public void makeMove(int x, int y, char val) throws InvalidMove {
         answers.makeMove(x, y, GridCell.charValueOf(val), this.getCell(x, y));
+        if (answers.isComplete()) {
+            if (answers.isCorrect()) {
+                this.winGame();
+            } else {
+                this.markIncorrect();
+            }
+        }
     }
 
-    public TeamAnswers getTeamAnswers() {
-        return answers;
+    public Grid getTeamAnswers() {
+        if (answers != null) {
+            return answers.getAnswers();
+        } else {
+            return null;
+        }
     }
 
 }

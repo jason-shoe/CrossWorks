@@ -21,3 +21,8 @@ export type HttpPlayerId = string;
 export function isHttpPlayerId(object: any): object is HttpPlayerId {
     return typeof object === 'string';
 }
+
+export enum BoardVal {
+    BLOCK = '#',
+    EMPTY = ' '
+}

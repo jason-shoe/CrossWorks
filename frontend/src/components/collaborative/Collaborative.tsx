@@ -1,161 +1,111 @@
-import { memo, useState, useEffect } from 'react';
-import {
-    NavigationSettings,
-    Direction,
-    CellHintAnnotation,
-    Clue,
-    CollaborativeGame,
-    CrosswordHint
-} from '../shared/types/types';
-import Crossword from '../shared/Crossword';
+import { memo, useState, useEffect, useMemo, useCallback } from 'react';
+import { CollaborativeGame, GameStatus } from '../shared/types/backendTypes';
+import { CellHintAnnotation } from '../shared/types/boardTypes';
 import './Collaborative.css';
-import { CrosswordHintRow } from '../shared/CrosswordHintRow';
-import { SendMessageFn } from '../shared/types/socketTypes';
+import { SendMessageFn, SocketEndpoint } from '../shared/types/socketTypes';
+import { getCellAnnotations } from '../shared/util/crosswordUtil';
+import { Paused } from './Paused';
+import { CollaborativeGameBoard } from './CollaborativeGameBoard';
+import styles from './styles/Collaborative.module.scss';
+import { WinScreen } from './WinScreen';
 
 interface CollaborativeProps {
     game: CollaborativeGame;
     sendMessage: SendMessageFn;
+    leaveGame: () => void;
 }
+
 export const Collaborative = memo(function Collaborative(
     props: CollaborativeProps
 ) {
-    const { game, sendMessage } = props;
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [clues, setClues] = useState<CrosswordHint[]>([]);
-    const [crosswordSize, setCrosswordSize] = useState(0);
-    const [inputCellsArray, setInputCellsArray] = useState<
+    const { game, sendMessage, leaveGame } = props;
+    const [cellAnnotations, setCellAnnotations] = useState<
         CellHintAnnotation[][] | undefined
     >(undefined);
 
-    const [navSettings, setNavSettings] = useState<NavigationSettings>({
-        coordinates: { row: 0, col: 0 },
-        direction: Direction.ACROSS
-    });
+    const [winScreenClosed, setWinScreenClosed] = useState(false);
 
-    // Calling sample crossword data API
     useEffect(() => {
-        // Storing the crossword clues
-        setClues(game.crossword.clues);
-        // Storing the size of the crossword
-        setCrosswordSize(game.crossword.size);
-        // Indicates that the crossword data hass been retrieved
-        setIsLoaded(true);
+        const cellAnnotations = getCellAnnotations(game.crossword);
+        setCellAnnotations(cellAnnotations);
+        setWinScreenClosed(false);
+    }, [game.crossword, game.teamAnswers]);
 
-        let inputCellsTemp: CellHintAnnotation[][] = [
-            ...Array(game.crossword.size)
-        ].map((x) =>
-            Array(game.crossword.size).fill({
-                across: undefined,
-                down: undefined
-            })
-        );
+    const closeWinScreen = useCallback(() => {
+        setWinScreenClosed(true);
+    }, []);
 
-        // Array that keeps track of the cells that should be able to take in an input
-        // Initially, every cell cannot take in an input
-        game.crossword.clues.forEach((clue: Clue) => {
-            var initialRowIndex = clue.row;
-            var initialColIndex = clue.col;
-            if (clue.direction === Direction.ACROSS) {
-                for (
-                    let i = initialColIndex;
-                    i < initialColIndex + clue.answerLength;
-                    i++
-                ) {
-                    inputCellsTemp[initialRowIndex][i] = {
-                        ...inputCellsTemp[initialRowIndex][i],
-                        across: {
-                            hintNumber: clue.hintNumber,
-                            isStart: i === initialColIndex
-                        },
-                        isValid:
-                            inputCellsTemp[initialRowIndex][i].down !==
-                            undefined
-                    };
-                }
-            } else {
-                for (
-                    let i = initialRowIndex;
-                    i < initialRowIndex + clue.answerLength;
-                    i++
-                ) {
-                    inputCellsTemp[i][initialColIndex] = {
-                        ...inputCellsTemp[i][initialColIndex],
-                        down: {
-                            hintNumber: clue.hintNumber,
-                            isStart: i === initialRowIndex
-                        },
-                        isValid:
-                            inputCellsTemp[i][initialColIndex].across !==
-                            undefined
-                    };
-                }
-            }
-        });
-        setInputCellsArray(inputCellsTemp);
-    }, [game.crossword]);
-
-    return (
-        <div>
-            {/* Displaying the crossword grid*/}
-            {isLoaded && inputCellsArray && (
-                <div className="collaborative-page-div">
-                    <div className="crossword-grid-div">
-                        <Crossword
-                            size={crosswordSize}
-                            inputCells={inputCellsArray}
-                            setNavSettings={setNavSettings}
-                            navSettings={navSettings}
-                            answers={game.teamAnswers.answers}
-                            sendMessage={sendMessage}
-                            gameId={game.gameId}
-                        />
-                    </div>
-
-                    {/* Displaying the crossword clues*/}
-                    <div className="clues-div">
-                        <div className="across-clues-div">
-                            <p className="clues-heading">Across Clues</p>
-                            {clues.map((clue: Clue, index) =>
-                                clue.direction === Direction.ACROSS ? (
-                                    <CrosswordHintRow
-                                        clue={clue}
-                                        navSettings={navSettings}
-                                        setNavSettings={setNavSettings}
-                                        annotationData={
-                                            inputCellsArray[
-                                                navSettings.coordinates.row
-                                            ][navSettings.coordinates.col]
-                                        }
-                                        textClassName={'clue-text'}
-                                        key={index}
-                                    />
-                                ) : undefined
-                            )}
-                        </div>
-                        <div className="down-clues-div">
-                            <p className="clues-heading">Down Clues</p>
-                            {clues.map((clue: Clue, index) =>
-                                clue.direction === Direction.DOWN ? (
-                                    <CrosswordHintRow
-                                        clue={clue}
-                                        navSettings={navSettings}
-                                        setNavSettings={setNavSettings}
-                                        annotationData={
-                                            inputCellsArray[
-                                                navSettings.coordinates.row
-                                            ][navSettings.coordinates.col]
-                                        }
-                                        textClassName={'clue-text'}
-                                        key={index}
-                                    />
-                                ) : undefined
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+    const pause = useCallback(
+        () => sendMessage(SocketEndpoint.PAUSE, undefined, game.gameId),
+        [game.gameId, sendMessage]
     );
+
+    const giveUp = useCallback(
+        () => sendMessage(SocketEndpoint.GIVE_UP, undefined, game.gameId),
+        [game.gameId, sendMessage]
+    );
+
+    const returnToSettings = useCallback(
+        () =>
+            sendMessage(
+                SocketEndpoint.RETURN_TO_SETTINGS,
+                undefined,
+                game.gameId
+            ),
+        [game.gameId, sendMessage]
+    );
+
+    const component = useMemo(() => {
+        if (cellAnnotations === undefined) {
+            return undefined;
+        } else if (
+            game.status === GameStatus.PAUSED ||
+            game.status === GameStatus.INCORRECT
+        ) {
+            return (
+                <Paused
+                    gameId={game.gameId}
+                    status={game.status}
+                    sendMessage={sendMessage}
+                />
+            );
+        } else if (
+            game.status === GameStatus.STARTED ||
+            game.status === GameStatus.WON ||
+            game.status === GameStatus.LOST
+        ) {
+            return (
+                <div>
+                    <div> this is the game status{game.status}</div>
+                    <button onClick={pause}>Pause</button>
+                    <button onClick={giveUp}>Give Up</button>
+                    <button onClick={leaveGame}>Leave Game</button>
+                    <button onClick={returnToSettings}>
+                        Return to Settings
+                    </button>
+                    <CollaborativeGameBoard
+                        game={game}
+                        sendMessage={sendMessage}
+                        cellAnnotations={cellAnnotations}
+                    />
+                    {!winScreenClosed && game.status === GameStatus.WON && (
+                        <WinScreen closeWindow={closeWinScreen} />
+                    )}
+                </div>
+            );
+        }
+    }, [
+        cellAnnotations,
+        game,
+        sendMessage,
+        pause,
+        giveUp,
+        leaveGame,
+        returnToSettings,
+        winScreenClosed,
+        closeWinScreen
+    ]);
+    return <div className={styles.collaborativeWrapper}>{component}</div>;
 });
 
 export default Collaborative;

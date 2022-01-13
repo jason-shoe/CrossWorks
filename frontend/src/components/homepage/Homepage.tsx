@@ -1,20 +1,20 @@
 import { memo, useCallback } from 'react';
-import { GameState } from '../shared/types/gameState';
+import { PageState } from '../shared/types/pageState';
 
 interface HomepageProps {
-    setGameState: (state: GameState) => void;
+    setPageState: (state: PageState) => void;
 }
 
 export const Homepage = memo(function Homepage({
-    setGameState
+    setPageState
 }: HomepageProps) {
     const navigateToCreateGame = useCallback(
-        () => setGameState(GameState.CREATE_GAME),
-        [setGameState]
+        () => setPageState(PageState.CREATE_GAME),
+        [setPageState]
     );
     const navigateToJoinGame = useCallback(
-        () => setGameState(GameState.JOIN_GAME),
-        [setGameState]
+        () => setPageState(PageState.JOIN_GAME),
+        [setPageState]
     );
 
     const buttonStyles = `bg-white border border-gray-200 rounded text-xl py-32

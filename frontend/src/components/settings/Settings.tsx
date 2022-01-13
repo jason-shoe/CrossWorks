@@ -1,7 +1,7 @@
 import { memo, useEffect, useCallback } from 'react';
 import { UserEntry } from '../shared/UserEntry';
 import Calendar from '../shared/Calendar';
-import { CollaborativeGame } from '../shared/types/types';
+import { CollaborativeGame } from '../shared/types/backendTypes';
 import { InputNumber } from 'rsuite';
 import { UserInfo } from '@rsuite/icons';
 import styles from './Settings.module.scss';

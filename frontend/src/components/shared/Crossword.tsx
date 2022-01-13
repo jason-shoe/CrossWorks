@@ -1,27 +1,27 @@
 import { memo, useEffect, useCallback } from 'react';
+import { Grid } from './types/backendTypes';
 import {
-    NavigationSettings,
-    Direction,
-    Keys,
     CellHintAnnotation,
-    Answers
-} from './types/types';
+    Direction,
+    NavigationSettings,
+    Keys
+} from '../shared/types/boardTypes';
 import styles from './Crossword.module.scss';
 import { CrosswordCell } from './CrosswordCell';
 import { SendMessageFn, SocketEndpoint } from './types/socketTypes';
+import { BoardVal } from './types/httpTypes';
+import { isEmpty, isLetter } from './util/crosswordUtil';
 
 interface CrosswordProps {
     size: number;
     inputCells: CellHintAnnotation[][];
     setNavSettings: (coords: NavigationSettings) => void;
-    navSettings: NavigationSettings;
-    answers: Answers;
+    answers: Grid;
     sendMessage: SendMessageFn;
     gameId: string;
-}
-
-function isEmpty(cell: string) {
-    return cell === 'EMPTY';
+    canEdit: boolean;
+    groundTruth?: Grid;
+    navSettings?: NavigationSettings;
 }
 
 export const Crossword = memo(function Crossword(props: CrosswordProps) {
@@ -33,12 +33,17 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
         navSettings,
         answers,
         sendMessage,
-        gameId
+        gameId,
+        canEdit,
+        groundTruth
     } = props;
     const cells = [...Array(size).keys()];
 
     const handleChange = useCallback(
         (letter: string, newSettings?: NavigationSettings) => {
+            if (!navSettings) {
+                return;
+            }
             const settings = newSettings ?? navSettings;
             sendMessage(
                 SocketEndpoint.MAKE_MOVE,
@@ -55,6 +60,9 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
 
     const handleCoordinateChange = useCallback(
         (shift: number, newDirection: Direction) => {
+            if (!navSettings) {
+                return;
+            }
             let newSettings;
             if (newDirection !== navSettings.direction) {
                 newSettings = {
@@ -101,6 +109,9 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
 
     const handleInputCoordinateChange = useCallback(
         (considerFilled?: boolean) => {
+            if (!navSettings) {
+                return;
+            }
             let newSettings;
             if (navSettings.direction === Direction.ACROSS) {
                 for (
@@ -164,6 +175,9 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
 
     const handleKeyDown = useCallback(
         (event: KeyboardEvent) => {
+            if (!navSettings) {
+                return;
+            }
             const wasFilled = !isEmpty(
                 answers.grid[navSettings.coordinates.row][
                     navSettings.coordinates.col
@@ -177,10 +191,10 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
                 handleCoordinateChange(1, Direction.DOWN);
             } else if (event.key === Keys.ARROW_LEFT) {
                 handleCoordinateChange(-1, Direction.ACROSS);
-            } else if (isLetter(event.key)) {
+            } else if (isLetter(event.key) && canEdit) {
                 handleChange(event.key.toUpperCase());
                 handleInputCoordinateChange(wasFilled);
-            } else if (event.key === Keys.BACKSPACE) {
+            } else if (event.key === Keys.BACKSPACE && canEdit) {
                 let settings;
                 if (!wasFilled) {
                     settings = handleCoordinateChange(
@@ -188,26 +202,27 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
                         navSettings.direction
                     );
                 }
-                handleChange(' ', settings);
+                handleChange(BoardVal.EMPTY, settings);
             }
         },
         [
             answers.grid,
+            canEdit,
             handleChange,
             handleCoordinateChange,
             handleInputCoordinateChange,
-            navSettings.coordinates.col,
-            navSettings.coordinates.row,
-            navSettings.direction
+            navSettings
         ]
     );
 
     useEffect(() => {
-        window.addEventListener('keydown', handleKeyDown);
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [navSettings, answers, handleKeyDown]);
+        if (navSettings) {
+            window.addEventListener('keydown', handleKeyDown);
+            return () => {
+                window.removeEventListener('keydown', handleKeyDown);
+            };
+        }
+    }, [handleKeyDown, navSettings]);
 
     return (
         <div>
@@ -223,6 +238,7 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
                                     navSettings={navSettings}
                                     setNavSettings={setNavSettings}
                                     value={answers.grid[row][col]}
+                                    groundTruth={groundTruth?.grid[row][col]}
                                     key={col}
                                 />
                             );
@@ -233,9 +249,5 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
         </div>
     );
 });
-
-function isLetter(str: string) {
-    return str.length === 1 && str.match(/[a-zA-Z]/i);
-}
 
 export default Crossword;

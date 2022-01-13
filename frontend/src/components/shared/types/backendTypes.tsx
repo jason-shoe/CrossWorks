@@ -1,19 +1,25 @@
+import { Direction } from './boardTypes';
+
 export enum GameStatus {
     SETTINGS = 'SETTINGS',
     STARTED = 'STARTED',
-    FINISHED = 'FINISHED'
+    PAUSED = 'PAUSED',
+    INCORRECT = 'INCORRECT',
+    WON = 'WON',
+    LOST = 'LOST'
 }
 
 export interface CollaborativeGame {
     gameId: string;
     playerIds: string[];
     crosswordId: string;
-    gameStatus: GameStatus;
+    status: GameStatus;
     crossword: CrosswordData;
-    teamAnswers: { answers: Answers };
+    teamAnswers: Grid;
+    board: Grid | undefined;
 }
 
-export interface Answers {
+export interface Grid {
     grid: string[][];
     id: number;
     numNonBlock: number;
@@ -35,42 +41,8 @@ export interface CrosswordHint {
     hint: string;
     row: number;
     col: number;
-    direction: string;
-    answerLength: number;
-}
-
-export interface NavigationSettings {
-    coordinates: Coordinates;
     direction: Direction;
-}
-
-export interface Coordinates {
-    row: number;
-    col: number;
-}
-
-export enum Direction {
-    ACROSS = 'ACROSS',
-    DOWN = 'DOWN'
-}
-
-export enum Keys {
-    ARROW_RIGHT = 'ArrowRight',
-    ARROW_LEFT = 'ArrowLeft',
-    ARROW_UP = 'ArrowUp',
-    ARROW_DOWN = 'ArrowDown',
-    BACKSPACE = 'Backspace'
-}
-
-export interface CellHintAnnotation {
-    isValid: boolean;
-    across: Annotation;
-    down: Annotation;
-}
-
-export interface Annotation {
-    hintNumber: number;
-    isStart: boolean;
+    answerLength: number;
 }
 
 export interface Clue {
