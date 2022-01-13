@@ -153,9 +153,10 @@ const MainRouter = memo(function MainRouterFn() {
         } else if (pageState === PageState.COMPETITIVE) {
             return <Competitive />;
         } else {
-            return game ? (
+            return clientId && game ? (
                 <Collaborative
                     game={game}
+                    clientId={clientId}
                     sendMessage={sendMessage}
                     leaveGame={leaveGame}
                 />

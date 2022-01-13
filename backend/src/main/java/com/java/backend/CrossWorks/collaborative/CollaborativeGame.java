@@ -7,17 +7,15 @@ import com.java.backend.CrossWorks.models.Datatype;
 import com.java.backend.CrossWorks.models.Grid;
 import com.java.backend.CrossWorks.models.GridCell;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.util.UUID;
 import java.util.Vector;
 
 @Entity
+@Table(name = "COLLABORATIVEGAME")
 public class CollaborativeGame extends Game {
     @Column(columnDefinition = "LONGTEXT")
-    private final Vector<Player> players;
+    private Vector<Player> players;
     @ManyToOne(cascade = {CascadeType.ALL})
     private TeamAnswers answers;
 
@@ -29,6 +27,12 @@ public class CollaborativeGame extends Game {
     public CollaborativeGame(Crossword crossword) {
         this();
         setCrossword(crossword);
+    }
+
+    public void detach() {
+        super.detach();
+        answers = null;
+        players = null;
     }
 
     public void setCrossword(Crossword crossword) {
@@ -48,6 +52,9 @@ public class CollaborativeGame extends Game {
     }
 
     public boolean hasPlayer(Player player) {
+        if (players == null) {
+            return false;
+        }
         for (Player arrayPlayer : players) {
             System.out.print(arrayPlayer.getPlayerId());
             if (arrayPlayer.getPlayerId().equals(player.getPlayerId())) {
@@ -71,10 +78,16 @@ public class CollaborativeGame extends Game {
 
     @JsonIgnore
     public boolean hasPlayers() {
+        if (players == null) {
+            return false;
+        }
         return players.size() != 0;
     }
 
     public Vector<String> getPlayerIds() {
+        if (players == null) {
+            return new Vector<>();
+        }
         Vector<String> player_ids = new Vector(players.size());
         for (int x = 0; x < players.size(); x++) {
             player_ids.add(x, players.get(x).getPlayerId());

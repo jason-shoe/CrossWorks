@@ -11,6 +11,7 @@ import { WinScreen } from './WinScreen';
 
 interface CollaborativeProps {
     game: CollaborativeGame;
+    clientId: string;
     sendMessage: SendMessageFn;
     leaveGame: () => void;
 }
@@ -18,7 +19,7 @@ interface CollaborativeProps {
 export const Collaborative = memo(function Collaborative(
     props: CollaborativeProps
 ) {
-    const { game, sendMessage, leaveGame } = props;
+    const { game, sendMessage, leaveGame, clientId } = props;
     const [cellAnnotations, setCellAnnotations] = useState<
         CellHintAnnotation[][] | undefined
     >(undefined);
@@ -85,6 +86,7 @@ export const Collaborative = memo(function Collaborative(
                     </button>
                     <CollaborativeGameBoard
                         game={game}
+                        clientId={clientId}
                         sendMessage={sendMessage}
                         cellAnnotations={cellAnnotations}
                     />

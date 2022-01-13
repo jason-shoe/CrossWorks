@@ -1,12 +1,12 @@
 package com.java.backend.CrossWorks.service;
 
 import com.java.backend.CrossWorks.CrossWorksApplication;
-import com.java.backend.CrossWorks.collaborative.CollaborativeGame;
+import com.java.backend.CrossWorks.collaborative.CompetitiveGame;
 import com.java.backend.CrossWorks.collaborative.Player;
 import com.java.backend.CrossWorks.exceptions.InvalidParamException;
 import com.java.backend.CrossWorks.models.Crossword;
 import com.java.backend.CrossWorks.models.GameStatus;
-import com.java.backend.CrossWorks.storage.CollaborativeGameStorage;
+import com.java.backend.CrossWorks.storage.CompetitiveGameStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,17 +21,17 @@ import java.util.function.Consumer;
 // GameService is the interface between JPA and the Games
 @Service
 @Configurable
-public class CollaborativeGameService {
+public class CompetitiveGameService {
     private static final Logger log = LoggerFactory.getLogger(CrossWorksApplication.class);
     @Autowired
-    private CollaborativeGameStorage repo;
+    private CompetitiveGameStorage repo;
 
-    public Vector<CollaborativeGame> getAllGames() {
-        Vector<CollaborativeGame> games = new Vector();
-        Iterable<CollaborativeGame> allGames = repo.findAll();
-        allGames.forEach(new Consumer<CollaborativeGame>() {
+    public Vector<CompetitiveGame> getAllGames() {
+        Vector<CompetitiveGame> games = new Vector();
+        Iterable<CompetitiveGame> allGames = repo.findAll();
+        allGames.forEach(new Consumer<CompetitiveGame>() {
             @Override
-            public void accept(CollaborativeGame game) {
+            public void accept(CompetitiveGame game) {
                 games.add(game);
             }
         });
@@ -42,18 +42,18 @@ public class CollaborativeGameService {
         repo.deleteAll();
     }
 
-    public CollaborativeGame createGame(Player player) {
-        CollaborativeGame game = new CollaborativeGame();
+    public CompetitiveGame createGame(Player player) {
+        CompetitiveGame game = new CompetitiveGame();
         game.addPlayer(player);
 
         repo.save(game);
         return game;
     }
 
-    public CollaborativeGame removeAndCreate(Player player) {
-        Iterator<CollaborativeGame> gamesIterator = repo.findAll().iterator();
+    public CompetitiveGame removeAndCreate(Player player) {
+        Iterator<CompetitiveGame> gamesIterator = repo.findAll().iterator();
         while (gamesIterator.hasNext()) {
-            CollaborativeGame currentGame = gamesIterator.next();
+            CompetitiveGame currentGame = gamesIterator.next();
             // deletes user from all other games it was in
             if (currentGame.hasPlayer(player)) {
                 currentGame.removePlayer(player);
@@ -65,11 +65,11 @@ public class CollaborativeGameService {
         return createGame(player);
     }
 
-    public CollaborativeGame performAction(Consumer<CollaborativeGame> action, String gameId,
-                                           String errorMsg) throws InvalidParamException {
-        Optional<CollaborativeGame> val = repo.findById(gameId);
+    public CompetitiveGame performAction(Consumer<CompetitiveGame> action, String gameId,
+                                         String errorMsg) throws InvalidParamException {
+        Optional<CompetitiveGame> val = repo.findById(gameId);
         if (val.isPresent()) {
-            CollaborativeGame currentGame = val.get();
+            CompetitiveGame currentGame = val.get();
             action.accept(currentGame);
             repo.save(currentGame);
             return currentGame;
@@ -78,31 +78,47 @@ public class CollaborativeGameService {
 
     }
 
-    public CollaborativeGame connectToGame(Player newPlayer, String gameId)
+    public CompetitiveGame connectToGame(Player newPlayer, String gameId)
             throws InvalidParamException {
-        Consumer<CollaborativeGame> action = (game) -> {
+        Consumer<CompetitiveGame> action = (game) -> {
             game.addPlayer(newPlayer);
         };
         return performAction(action, gameId, "Game ID doesn't exist in connectToGame");
     }
 
-    public CollaborativeGame setCrossword(Crossword crossword, String gameId)
+    public CompetitiveGame setCrossword(Crossword crossword, String gameId)
             throws InvalidParamException {
-        Consumer<CollaborativeGame> action = (game) -> {
+        Consumer<CompetitiveGame> action = (game) -> {
             game.setCrossword(crossword);
         };
         return performAction(action, gameId, "Game ID doesn't exist in setCrossword");
     }
 
-    public CollaborativeGame startGame(String gameId) throws InvalidParamException {
-        Consumer<CollaborativeGame> action = (game) -> {
+    public CompetitiveGame newTeam(Player newPlayer, String gameId)
+            throws InvalidParamException {
+        Consumer<CompetitiveGame> action = (game) -> {
+            game.newTeam(newPlayer);
+        };
+        return performAction(action, gameId, "Game ID doesn't exist in newTeam");
+    }
+
+    public CompetitiveGame switchTeam(Player newPlayer, int teamNumber, String gameId)
+            throws InvalidParamException {
+        Consumer<CompetitiveGame> action = (game) -> {
+            game.switchTeam(newPlayer, teamNumber);
+        };
+        return performAction(action, gameId, "Game ID doesn't exist in connectToGame");
+    }
+
+    public CompetitiveGame startGame(String gameId) throws InvalidParamException {
+        Consumer<CompetitiveGame> action = (game) -> {
             game.startGame();
         };
         return performAction(action, gameId, "Game ID doesn't exist in startGame");
     }
 
-    public CollaborativeGame unpauseGame(String gameId) throws InvalidParamException {
-        Consumer<CollaborativeGame> action = (game) -> {
+    public CompetitiveGame unpauseGame(String gameId) throws InvalidParamException {
+        Consumer<CompetitiveGame> action = (game) -> {
             if (game.getStatus() == GameStatus.PAUSED || game.getStatus() == GameStatus.INCORRECT) {
                 game.unpauseGame();
             }
@@ -110,8 +126,8 @@ public class CollaborativeGameService {
         return performAction(action, gameId, "Game ID doesn't exist in unpauseGame");
     }
 
-    public CollaborativeGame pauseGame(String gameId) throws InvalidParamException {
-        Consumer<CollaborativeGame> action = (game) -> {
+    public CompetitiveGame pauseGame(String gameId) throws InvalidParamException {
+        Consumer<CompetitiveGame> action = (game) -> {
             if (game.getStatus() == GameStatus.STARTED) {
                 game.pauseGame();
             }
@@ -119,8 +135,8 @@ public class CollaborativeGameService {
         return performAction(action, gameId, "Game ID doesn't exist in pauseGame");
     }
 
-    public CollaborativeGame loseGame(String gameId) throws InvalidParamException {
-        Consumer<CollaborativeGame> action = (game) -> {
+    public CompetitiveGame loseGame(String gameId) throws InvalidParamException {
+        Consumer<CompetitiveGame> action = (game) -> {
             if (game.getStatus() == GameStatus.STARTED) {
                 game.loseGame();
             }
@@ -128,23 +144,23 @@ public class CollaborativeGameService {
         return performAction(action, gameId, "Game ID doesn't exist in loseGame");
     }
 
-    public CollaborativeGame returnToSettings(String gameId) throws InvalidParamException {
-        Consumer<CollaborativeGame> action = (game) -> {
+    public CompetitiveGame returnToSettings(String gameId) throws InvalidParamException {
+        Consumer<CompetitiveGame> action = (game) -> {
             game.returnToSettings();
         };
         return performAction(action, gameId, "Game ID doesn't exist in returnToSettings");
     }
 
 
-    public CollaborativeGame leaveGame(String gameId, Player player) throws InvalidParamException {
-        Consumer<CollaborativeGame> action = (game) -> {
+    public CompetitiveGame leaveGame(String gameId, Player player) throws InvalidParamException {
+        Consumer<CompetitiveGame> action = (game) -> {
             game.removePlayer(player);
             if (!game.hasPlayers()) {
                 System.out.println("deleting this game " + gameId);
 //                game.detach();
-//                Optional<CollaborativeGame> val = repo.findById(gameId);
+//                Optional<CompetitiveGame> val = repo.findById(gameId);
 //                if (val.isPresent()) {
-//                    CollaborativeGame currentGame = val.get();
+//                    CompetitiveGame currentGame = val.get();
 //                    log.info("this is the game {}", currentGame.getGameId());
 //                }
 ////                repo.deleteById(gameId);
@@ -157,11 +173,12 @@ public class CollaborativeGameService {
     }
 
 
-    public CollaborativeGame makeMove(String gameId, int row, int col, char c) throws Exception {
-        Optional<CollaborativeGame> val = repo.findById(gameId);
+    public CompetitiveGame makeMove(String gameId, Player player, int row, int col, char c)
+            throws Exception {
+        Optional<CompetitiveGame> val = repo.findById(gameId);
         if (val.isPresent()) {
-            CollaborativeGame currentGame = val.get();
-            currentGame.makeMove(row, col, c);
+            CompetitiveGame currentGame = val.get();
+            currentGame.makeMove(player, row, col, c);
             repo.save(currentGame);
 
             return currentGame;
