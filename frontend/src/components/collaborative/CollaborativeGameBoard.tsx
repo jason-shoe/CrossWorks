@@ -16,6 +16,7 @@ import { clueHash, getClueProgress } from '../shared/util/crosswordUtil';
 
 interface CollaborativeGameBoardProps {
     game: CollaborativeGame;
+    clientId: string;
     sendMessage: SendMessageFn;
     cellAnnotations: CellHintAnnotation[][];
 }
@@ -23,7 +24,7 @@ interface CollaborativeGameBoardProps {
 export const CollaborativeGameBoard = memo(function CollaborativeGameFn(
     props: CollaborativeGameBoardProps
 ) {
-    const { game, sendMessage, cellAnnotations } = props;
+    const { game, sendMessage, cellAnnotations, clientId } = props;
     const [clueProgress, setClueProgress] = useState<Map<string, number>>(
         new Map()
     );
@@ -54,6 +55,7 @@ export const CollaborativeGameBoard = memo(function CollaborativeGameFn(
                     answers={game.teamAnswers}
                     sendMessage={sendMessage}
                     gameId={game.gameId}
+                    clientId={clientId}
                     canEdit={game.status === GameStatus.STARTED}
                     groundTruth={game.board}
                 />

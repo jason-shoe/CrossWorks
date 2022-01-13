@@ -5,6 +5,7 @@ public enum Datatype {
     CROSSWORD_HINT("crossword_hint-"),
     TEAM_ANSWERS("team-answers-"),
     PLAYER("player-"),
+    TEAM("team-"),
     GAME("game-"),
     COLLABORATIVE_GAME("collaborative_game-"),
     COMPETITIVE_GAME("competitive_game-");

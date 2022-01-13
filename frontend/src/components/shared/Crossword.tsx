@@ -19,6 +19,7 @@ interface CrosswordProps {
     answers: Grid;
     sendMessage: SendMessageFn;
     gameId: string;
+    clientId: string;
     canEdit: boolean;
     groundTruth?: Grid;
     navSettings?: NavigationSettings;
@@ -34,6 +35,7 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
         answers,
         sendMessage,
         gameId,
+        clientId,
         canEdit,
         groundTruth
     } = props;
@@ -50,7 +52,8 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
                 JSON.stringify({
                     row: settings.coordinates.row,
                     col: settings.coordinates.col,
-                    c: letter
+                    c: letter,
+                    player: { playerId: clientId }
                 }),
                 gameId
             );

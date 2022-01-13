@@ -3,16 +3,15 @@ package com.java.backend.CrossWorks.collaborative;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.java.backend.CrossWorks.models.*;
 
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 import java.util.UUID;
 
 @MappedSuperclass
 public class Game {
     @Id
+    @Column(name = "GAMEID")
     private final String gameId;
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.PERSIST})
     private Crossword crossword;
     private GameStatus status;
 
@@ -43,6 +42,10 @@ public class Game {
     @JsonIgnoreProperties("answers")
     public Crossword getCrossword() {
         return crossword;
+    }
+
+    public void detach() {
+        crossword = null;
     }
 
     public GameStatus getStatus() {
