@@ -9,7 +9,6 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -27,7 +26,7 @@ public class Crossword {
     private Date date;
     private String source;
     private int size;
-    @Column( length = 10000)
+    @Column(length = 10000)
     private Vector<CrosswordHint> clues;
     @ManyToOne(cascade = {CascadeType.ALL})
 
@@ -35,19 +34,19 @@ public class Crossword {
     private Grid answers;
 
     protected Crossword() {
-        this.crosswordId = Datatype.CROSSWORD.prefix + UUID.randomUUID().toString();
+        this.crosswordId = Datatype.CROSSWORD.prefix + UUID.randomUUID();
     }
 
     // should only fill after all the hints have been added;
     public void fillAnswers() {
         answers = new Grid(size);
         boolean valid = true;
-        for(CrosswordHint hint: clues) {
-           valid = processHint(hint) && valid;
+        for (CrosswordHint hint : clues) {
+            valid = processHint(hint) && valid;
         }
 
         if (!valid) {
-           answers.clear();
+            answers.clear();
         }
 
         // if the clues aren't valid, then we just make the entire board black
@@ -57,7 +56,7 @@ public class Crossword {
     public Boolean processHint(CrosswordHint hint) {
         String answer = hint.getAnswer();
         int isAcross = hint.direction == Direction.ACROSS ? 1 : 0;
-        for(int i = hint.row; i < answer.length(); i++) {
+        for (int i = 0; i < answer.length(); i++) {
             int x = hint.row + (1 - isAcross) * i;
             int y = hint.col + isAcross * i;
             GridCell currCell = answers.getCell(x, y);
@@ -101,6 +100,14 @@ public class Crossword {
     @JsonIgnore
     public Grid getBoard() {
         return answers;
+    }
+
+    public Grid getBoardProtected(boolean show) {
+        if (show) {
+            return answers;
+        } else {
+            return null;
+        }
     }
 
     @JsonIgnore

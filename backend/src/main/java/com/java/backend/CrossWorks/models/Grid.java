@@ -5,13 +5,12 @@ import java.util.Random;
 
 @Entity
 public class Grid {
-    @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    private Long id;
-
-    @Column(columnDefinition="LONGTEXT")
+    @Column(columnDefinition = "LONGTEXT")
     private final GridCell[][] board;
     private final int size;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
     protected Grid() {
         this(10);
@@ -21,10 +20,6 @@ public class Grid {
         size = s;
         board = new GridCell[size][size];
         clear();
-    }
-
-    public Long getId() {
-        return id;
     }
 
     // deep copy constructor
@@ -38,6 +33,10 @@ public class Grid {
         }
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public GridCell getCell(int x, int y) {
         return board[x][y];
     }
@@ -46,8 +45,15 @@ public class Grid {
         board[x][y] = cell;
     }
 
-    public GridCell[][] getGrid() {
-        return board;
+    public char[][] getGrid() {
+        char[][] charBoard = new char[size][size];
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                charBoard[x][y] = board[x][y].charValue;
+            }
+        }
+
+        return charBoard;
     }
 
     public int getSize() {
@@ -58,9 +64,9 @@ public class Grid {
         int counter = 0;
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
-               if (board[x][y] != GridCell.BLOCK) {
-                  counter += 1;
-               }
+                if (board[x][y] != GridCell.BLOCK) {
+                    counter += 1;
+                }
             }
         }
 
@@ -75,10 +81,20 @@ public class Grid {
         }
     }
 
+    public void clearLetters() {
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                if (board[x][y] != GridCell.BLOCK) {
+                    board[x][y] = GridCell.EMPTY;
+                }
+            }
+        }
+    }
+
     public void blacken() {
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
-                if(board[x][y] == GridCell.EMPTY) {
+                if (board[x][y] == GridCell.EMPTY) {
                     board[x][y] = GridCell.BLOCK;
                 }
             }

@@ -5,13 +5,16 @@ import com.java.backend.CrossWorks.models.Datatype;
 import com.java.backend.CrossWorks.models.Grid;
 import com.java.backend.CrossWorks.models.GridCell;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import java.util.UUID;
 
 @Entity
 public class TeamAnswers {
     @Id
-    private String teamAnswersId;
+    private final String teamAnswersId;
 
     @ManyToOne(cascade = {CascadeType.ALL})
     private Grid answers;
@@ -20,25 +23,26 @@ public class TeamAnswers {
     private int numCells;
 
     public TeamAnswers() {
-        teamAnswersId = Datatype.TEAM_ANSWERS.prefix + UUID.randomUUID().toString();
+        teamAnswersId = Datatype.TEAM_ANSWERS.prefix + UUID.randomUUID();
     }
 
     public TeamAnswers(Grid answers, int numCells) {
-        this.teamAnswersId = Datatype.TEAM_ANSWERS.prefix + UUID.randomUUID().toString();
+        this.teamAnswersId = Datatype.TEAM_ANSWERS.prefix + UUID.randomUUID();
         this.answers = answers;
         numFilled = 0;
         numCorrect = 0;
         this.numCells = numCells;
     }
 
-    public void makeMove(int x, int y, GridCell newValue, GridCell correctValue) throws InvalidMove {
+    public void makeMove(int x, int y, GridCell newValue, GridCell correctValue)
+            throws InvalidMove {
         GridCell oldValue = answers.getCell(x, y);
 
         if (newValue == GridCell.BLOCK) {
             throw new InvalidMove("Tried fillling a blocked cell");
         }
 
-        if(newValue == oldValue) {
+        if (newValue == oldValue) {
             return;
         }
 
@@ -73,8 +77,18 @@ public class TeamAnswers {
     public Grid getAnswers() {
         return answers;
     }
-    public boolean checkFinished() {
+
+    public boolean isComplete() {
+        return numFilled == numCells;
+    }
+
+    public boolean isCorrect() {
         return numCorrect == numCells;
     }
 
+    public void clear() {
+        answers.clearLetters();
+        numFilled = 0;
+        numCorrect = 0;
+    }
 }
