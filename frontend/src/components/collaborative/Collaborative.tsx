@@ -2,15 +2,13 @@ import { memo, useState, useEffect, useMemo, useCallback } from 'react';
 import { CollaborativeGame, GameStatus } from '../shared/types/backendTypes';
 import { CellHintAnnotation } from '../shared/types/boardTypes';
 import './Collaborative.css';
-import {
-    SendMessageFn,
-    CollaborativeSocketEndpoint
-} from '../shared/types/socketTypes';
+import { SendMessageFn } from '../shared/types/socketTypes';
 import { getCellAnnotations } from '../shared/util/crosswordUtil';
-import { Paused } from './Paused';
-import { CollaborativeGameBoard } from './CollaborativeGameBoard';
-import styles from './styles/Collaborative.module.scss';
-import { WinScreen } from './WinScreen';
+import { Paused } from '../header/Paused';
+import { GameBoard } from '../crossword/GameBoard';
+import { WinScreen } from '../header/WinScreen';
+import { Header } from '../header/Header';
+import styles from './Collaborative.module.scss';
 
 interface CollaborativeProps {
     game: CollaborativeGame;
@@ -39,85 +37,50 @@ export const Collaborative = memo(function Collaborative(
         setWinScreenClosed(true);
     }, []);
 
-    const pause = useCallback(
-        () =>
-            sendMessage(
-                CollaborativeSocketEndpoint.PAUSE,
-                undefined,
-                game.gameId
-            ),
-        [game.gameId, sendMessage]
-    );
-
-    const giveUp = useCallback(
-        () =>
-            sendMessage(
-                CollaborativeSocketEndpoint.GIVE_UP,
-                undefined,
-                game.gameId
-            ),
-        [game.gameId, sendMessage]
-    );
-
-    const returnToSettings = useCallback(
-        () =>
-            sendMessage(
-                CollaborativeSocketEndpoint.RETURN_TO_SETTINGS,
-                undefined,
-                game.gameId
-            ),
-        [game.gameId, sendMessage]
-    );
-
     const component = useMemo(() => {
         if (cellAnnotations === undefined) {
             return undefined;
-        } else if (
-            game.status === GameStatus.PAUSED ||
-            game.status === GameStatus.INCORRECT
-        ) {
-            return (
-                <Paused
-                    gameId={game.gameId}
-                    status={game.status}
-                    sendMessage={sendMessage}
-                />
-            );
-        } else if (
-            game.status === GameStatus.STARTED ||
-            game.status === GameStatus.WON ||
-            game.status === GameStatus.LOST
-        ) {
-            return (
-                <div>
-                    <div> this is the game status{game.status}</div>
-                    <button onClick={pause}>Pause</button>
-                    <button onClick={giveUp}>Give Up</button>
-                    <button onClick={leaveGame}>Leave Game</button>
-                    <button onClick={returnToSettings}>
-                        Return to Settings
-                    </button>
-                    <CollaborativeGameBoard
-                        game={game}
-                        teamAnswers={game.teamAnswers}
-                        clientId={clientId}
+        }
+        switch (game.status) {
+            case GameStatus.PAUSED:
+            case GameStatus.INCORRECT:
+                return (
+                    <Paused
+                        gameId={game.gameId}
+                        status={game.status}
                         sendMessage={sendMessage}
-                        cellAnnotations={cellAnnotations}
                     />
-                    {!winScreenClosed && game.status === GameStatus.WON && (
-                        <WinScreen closeWindow={closeWinScreen} />
-                    )}
-                </div>
-            );
+                );
+            case GameStatus.STARTED:
+            case GameStatus.WON:
+            case GameStatus.LOST:
+                return (
+                    <div>
+                        <Header
+                            game={game}
+                            sendMessage={sendMessage}
+                            leaveGame={leaveGame}
+                        />
+                        <GameBoard
+                            game={game}
+                            teamAnswers={game.teamAnswers}
+                            clientId={clientId}
+                            sendMessage={sendMessage}
+                            cellAnnotations={cellAnnotations}
+                        />
+                        {!winScreenClosed && game.status === GameStatus.WON && (
+                            <WinScreen closeWindow={closeWinScreen} />
+                        )}
+                    </div>
+                );
+            default:
+                return undefined;
         }
     }, [
         cellAnnotations,
         game,
         sendMessage,
-        pause,
-        giveUp,
         leaveGame,
-        returnToSettings,
         clientId,
         winScreenClosed,
         closeWinScreen

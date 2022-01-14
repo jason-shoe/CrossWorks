@@ -1,5 +1,5 @@
 import { memo, useEffect, useCallback, useMemo } from 'react';
-import { Grid, isCollaborativeGameId } from './types/backendTypes';
+import { Grid, isCollaborativeGameId } from '../shared/types/backendTypes';
 import {
     CellHintAnnotation,
     Direction,
@@ -12,9 +12,9 @@ import {
     SendMessageFn,
     CollaborativeSocketEndpoint,
     CompetitiveSocketEndpoint
-} from './types/socketTypes';
-import { BoardVal } from './types/httpTypes';
-import { isEmpty, isLetter } from './util/crosswordUtil';
+} from '../shared/types/socketTypes';
+import { BoardVal } from '../shared/types/httpTypes';
+import { isEmpty, isLetter } from '../shared/util/crosswordUtil';
 
 interface CrosswordProps {
     size: number;
@@ -71,7 +71,7 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
                 gameId
             );
         },
-        [clientId, gameId, navSettings, sendMessage]
+        [canEdit, canNav, clientId, gameId, navSettings, sendMessage]
     );
 
     const handleCoordinateChange = useCallback(

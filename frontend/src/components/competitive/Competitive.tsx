@@ -1,12 +1,12 @@
-import { memo, useState, useMemo, useEffect, useCallback } from 'react';
-import { BACKEND_URL } from '../shared/types/httpTypes';
+import { memo, useState, useMemo, useEffect } from 'react';
 import { CompetitiveGame, Grid } from '../shared/types/backendTypes';
 import { SendMessageFn } from '../shared/types/socketTypes';
-import { CollaborativeGameBoard } from '../collaborative/CollaborativeGameBoard';
+import { GameBoard } from '../crossword/GameBoard';
 import { getCellAnnotations } from '../shared/util/crosswordUtil';
 import { CellHintAnnotation } from '../shared/types/boardTypes';
-import Crossword from '../shared/Crossword';
-import styles from './styles/Competitive.module.scss';
+import styles from './Competitive.module.scss';
+import Crossword from '../crossword/Crossword';
+import { Header } from '../header/Header';
 
 interface CompetitiveProps {
     game: CompetitiveGame;
@@ -35,22 +35,16 @@ export const Competitive = memo(function Competitive(props: CompetitiveProps) {
         setCellAnnotations(cellAnnotations);
     }, [game.crossword, game.teamAnswers]);
 
-    const pause = useCallback(() => {}, []);
-    const giveUp = useCallback(() => {}, []);
-    const returnToSettings = useCallback(() => {}, []);
-
     const component = useMemo(() => {
         if (game !== undefined && cellAnnotations) {
             return (
                 <div>
-                    <div>this is the game status {game.status}</div>
-                    <button onClick={pause}>Pause</button>
-                    <button onClick={giveUp}>Give Up</button>
-                    <button onClick={leaveGame}>Leave Game</button>
-                    <button onClick={returnToSettings}>
-                        Return to Settings
-                    </button>
-                    <CollaborativeGameBoard
+                    <Header
+                        game={game}
+                        sendMessage={sendMessage}
+                        leaveGame={leaveGame}
+                    />
+                    <GameBoard
                         game={game}
                         teamAnswers={teamsAnswers[clientTeamNumber]}
                         clientId={clientId}
@@ -78,10 +72,7 @@ export const Competitive = memo(function Competitive(props: CompetitiveProps) {
         clientId,
         clientTeamNumber,
         game,
-        giveUp,
         leaveGame,
-        pause,
-        returnToSettings,
         sendMessage,
         teamsAnswers
     ]);
