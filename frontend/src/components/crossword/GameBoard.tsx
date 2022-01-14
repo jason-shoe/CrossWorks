@@ -1,12 +1,11 @@
 import { memo, useEffect, useState } from 'react';
-import Crossword from '../shared/Crossword';
-import { CrosswordHintRow } from '../shared/CrosswordHintRow';
+import Crossword from './Crossword';
+import { CrosswordHintRow } from './CrosswordHintRow';
 import { SendMessageFn } from '../shared/types/socketTypes';
 import {
     Clue,
     CollaborativeGame,
     CompetitiveGame,
-    GameStatus,
     Grid
 } from '../shared/types/backendTypes';
 import {
@@ -16,7 +15,7 @@ import {
 } from '../shared/types/boardTypes';
 import { clueHash, getClueProgress } from '../shared/util/crosswordUtil';
 
-interface CollaborativeGameBoardProps {
+interface GameBoardProps {
     game: CollaborativeGame | CompetitiveGame;
     teamAnswers: Grid;
     clientId: string;
@@ -24,8 +23,8 @@ interface CollaborativeGameBoardProps {
     cellAnnotations: CellHintAnnotation[][];
 }
 
-export const CollaborativeGameBoard = memo(function CollaborativeGameFn(
-    props: CollaborativeGameBoardProps
+export const GameBoard = memo(function CollaborativeGameFn(
+    props: GameBoardProps
 ) {
     const { game, teamAnswers, sendMessage, cellAnnotations, clientId } = props;
     const [clueProgress, setClueProgress] = useState<Map<string, number>>(

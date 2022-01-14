@@ -1,6 +1,6 @@
 import { memo, useMemo, useCallback } from 'react';
 import styles from './Crossword.module.scss';
-import { BoardVal } from './types/httpTypes';
+import { BoardVal } from '../shared/types/httpTypes';
 import {
     CellHintAnnotation,
     Direction,

@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo } from 'react';
 import styles from './Crossword.module.scss';
-import { Clue } from './types/backendTypes';
+import { Clue } from '../shared/types/backendTypes';
 import {
     CellHintAnnotation,
     Direction,
@@ -15,6 +15,7 @@ interface CrosswordHintRowProps {
     textClassName: string;
     finished: boolean;
 }
+
 export const CrosswordHintRow = memo((props: CrosswordHintRowProps) => {
     let {
         clue,

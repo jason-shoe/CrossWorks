@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import styles from './styles/Collaborative.module.scss';
+import styles from './Header.module.scss';
 
 interface WinScreenProps {
     closeWindow: () => void;

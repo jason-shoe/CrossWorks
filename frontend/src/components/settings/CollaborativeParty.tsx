@@ -5,11 +5,9 @@ import { UserEntry } from '../shared/UserEntry';
 
 interface CollaborativePartyProps {
     game: CollaborativeGame;
-    clientId: string;
 }
 export const CollaborativeParty = memo(function CollaborativePartyFn({
-    game,
-    clientId
+    game
 }: CollaborativePartyProps) {
     return (
         <div>

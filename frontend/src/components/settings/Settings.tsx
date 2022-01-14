@@ -1,5 +1,4 @@
 import { memo, useEffect, useCallback } from 'react';
-import { UserEntry } from '../shared/UserEntry';
 import Calendar from '../shared/Calendar';
 import {
     CollaborativeGame,
@@ -7,13 +6,11 @@ import {
     isCollaborative
 } from '../shared/types/backendTypes';
 import { InputNumber } from 'rsuite';
-import { UserInfo } from '@rsuite/icons';
 import styles from './Settings.module.scss';
 import {
     SendMessageFn,
     CollaborativeSocketEndpoint,
     CompetitiveSocketEndpoint,
-    createTeamSubscription,
     isActiveTeamSubscription,
     isTeamSubscription
 } from '../shared/types/socketTypes';
@@ -23,7 +20,6 @@ import { CompetitiveParty } from './CompetitiveParty';
 interface SettingsProps {
     createCollaborative: boolean;
     sendMessage: SendMessageFn;
-    addSubscription: (subscription: string) => void;
     removeSubscription: (subscription: string) => void;
     clientTeamNumber: number | undefined;
     subscriptions: string[];
@@ -32,13 +28,11 @@ interface SettingsProps {
 }
 
 export const Settings = memo(function SettingsFn(props: SettingsProps) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {
         createCollaborative,
         game,
         sendMessage,
         clientId,
-        addSubscription,
         removeSubscription,
         subscriptions,
         clientTeamNumber
@@ -60,14 +54,20 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
     );
 
     const startGame = useCallback(() => {
-        if (game !== undefined && clientTeamNumber !== undefined) {
-            sendMessage(
-                createCollaborative
-                    ? CollaborativeSocketEndpoint.START_GAME
-                    : CompetitiveSocketEndpoint.START_GAME,
-                undefined,
-                game.gameId
-            );
+        if (game !== undefined) {
+            if (clientTeamNumber !== undefined && !createCollaborative) {
+                sendMessage(
+                    CompetitiveSocketEndpoint.START_GAME,
+                    undefined,
+                    game.gameId
+                );
+            } else if (createCollaborative) {
+                sendMessage(
+                    CollaborativeSocketEndpoint.START_GAME,
+                    undefined,
+                    game.gameId
+                );
+            }
         }
     }, [clientTeamNumber, createCollaborative, game, sendMessage]);
 
@@ -122,10 +122,7 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
                         </div>
 
                         {game && isCollaborative(game) ? (
-                            <CollaborativeParty
-                                game={game}
-                                clientId={clientId}
-                            />
+                            <CollaborativeParty game={game} />
                         ) : (
                             <CompetitiveParty
                                 game={game}

@@ -1,9 +1,6 @@
 import { UserInfo } from '@rsuite/icons';
 import { memo, useCallback, useMemo } from 'react';
-import {
-    CollaborativeGame,
-    CompetitiveGame
-} from '../shared/types/backendTypes';
+import { CompetitiveGame } from '../shared/types/backendTypes';
 import {
     CompetitiveSocketEndpoint,
     SendMessageFn
