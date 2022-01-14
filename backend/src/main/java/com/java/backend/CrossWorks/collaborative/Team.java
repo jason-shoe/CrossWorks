@@ -5,15 +5,16 @@ import com.java.backend.CrossWorks.models.Datatype;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.io.Serializable;
 import java.util.UUID;
 import java.util.Vector;
 
 @Entity
-public class Team {
+public class Team implements Serializable {
+    @Column(columnDefinition = "LONGTEXT")
+    public final Vector<Player> team;
     @Id
     private final String teamId;
-    @Column(columnDefinition = "LONGTEXT")
-    private final Vector<Player> team;
 
     public Team() {
         teamId = Datatype.TEAM.prefix + UUID.randomUUID();

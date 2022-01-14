@@ -7,10 +7,7 @@ import com.java.backend.CrossWorks.models.Datatype;
 import com.java.backend.CrossWorks.models.Grid;
 import com.java.backend.CrossWorks.models.GridCell;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -21,8 +18,10 @@ public class CompetitiveGame extends Game {
     private Vector<Team> players;
     @Column(columnDefinition = "LONGTEXT")
     private Vector<TeamAnswers> answers;
+    @Column(columnDefinition = "LONGTEXT")
+    private Vector<TeamAnswers> maskedAnswers;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Grid answersGrid;
     private int numCells;
 
@@ -39,6 +38,7 @@ public class CompetitiveGame extends Game {
     public void detach() {
         super.detach();
         answers = null;
+        maskedAnswers = null;
         players = null;
     }
 
@@ -53,13 +53,19 @@ public class CompetitiveGame extends Game {
     }
 
     public void addPlayer(Player player) {
+        System.out.println("trying to add a player");
         if (this.hasPlayer(player)) {
             return;
         }
 
+
+        System.out.println("1");
         Team newTeam = new Team();
+        System.out.println("2");
         newTeam.add(player);
+        System.out.println("3");
         players.addElement(newTeam);
+        System.out.println("4");
     }
 
     public void removePlayer(Player player) {
@@ -83,6 +89,30 @@ public class CompetitiveGame extends Game {
         }
         return -1;
     }
+
+    public int getNumTeams() {
+        return players.size();
+    }
+
+    @JsonIgnore
+    public Grid[] getTeamAnswers() {
+        Grid[] teamAnswers = new Grid[this.getNumTeams()];
+        for (int i = 0; i < this.getNumTeams(); i++) {
+            teamAnswers[i] = answers.get(i).getAnswers();
+        }
+        return teamAnswers;
+    }
+
+
+    @JsonIgnore
+    public Grid[] getMaskedTeamAnswers() {
+        Grid[] teamAnswers = new Grid[this.getNumTeams()];
+        for (int i = 0; i < this.getNumTeams(); i++) {
+            teamAnswers[i] = maskedAnswers.get(i).getAnswers();
+        }
+        return teamAnswers;
+    }
+
 
     public boolean hasPlayer(Player player) {
         if (players == null) {
@@ -114,8 +144,10 @@ public class CompetitiveGame extends Game {
         System.out.println("Start game thing");
         super.startGame();
         answers = new Vector<>();
+        maskedAnswers = new Vector<>();
         for (int i = 0; i < players.size(); i++) {
-            answers.addElement(new TeamAnswers(answersGrid, numCells));
+            answers.addElement(new TeamAnswers(new Grid(answersGrid), numCells));
+            maskedAnswers.addElement(new TeamAnswers(new Grid(answersGrid), numCells));
         }
     }
 
@@ -146,7 +178,16 @@ public class CompetitiveGame extends Game {
         if (teamNumber == -1) {
             return;
         }
-        answers.get(teamNumber).makeMove(x, y, GridCell.charValueOf(val), this.getCell(x, y));
+        GridCell entry = GridCell.charValueOf(val);
+        GridCell correctEntry = this.getCell(x, y);
+        answers.get(teamNumber).makeMove(x, y, entry, correctEntry);
+
+        if (correctEntry == entry) {
+            maskedAnswers.get(teamNumber).makeMove(x, y, GridCell.CORRECT, GridCell.CORRECT);
+        } else {
+            maskedAnswers.get(teamNumber).makeMove(x, y, GridCell.INCORRECT, GridCell.CORRECT);
+        }
+
         if (answers.get(teamNumber).isComplete()) {
             if (answers.get(teamNumber).isCorrect()) {
                 this.winGame();

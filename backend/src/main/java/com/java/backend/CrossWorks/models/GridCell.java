@@ -6,6 +6,8 @@ import java.util.Map;
 public enum GridCell {
     BLOCK('#'),
     EMPTY(' '),
+    CORRECT('1'),
+    INCORRECT('0'),
     A('A'),
     B('B'),
     C('C'),
@@ -33,18 +35,18 @@ public enum GridCell {
     Y('Y'),
     Z('Z');
 
+    private static final Map<Character, GridCell> BY_CHAR_VALUE = new HashMap<>();
+
+    static {
+        for (GridCell cell : values()) {
+            BY_CHAR_VALUE.put(cell.charValue, cell);
+        }
+    }
+
     public final char charValue;
 
     GridCell(char charValue) {
         this.charValue = charValue;
-    }
-
-    private static final Map<Character, GridCell> BY_CHAR_VALUE = new HashMap<>();
-
-    static {
-        for (GridCell cell: values()) {
-            BY_CHAR_VALUE.put(cell.charValue, cell);
-        }
     }
 
     public static GridCell charValueOf(char charValue) {

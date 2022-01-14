@@ -1,10 +1,10 @@
 export enum PageState {
-    MAIN,
-    CREATE_GAME,
-    JOIN_GAME,
-    BAD_JOIN_GAME,
-    COLLABORATIVE_SETTINGS,
-    COMPETITIVE_SETTINGS,
-    COLLABORATIVE,
-    COMPETITIVE
+    MAIN = 'main',
+    CREATE_GAME = 'createGame',
+    JOIN_GAME = 'joinGame',
+    BAD_JOIN_GAME = 'badJoinGame',
+    COLLABORATIVE_SETTINGS = 'collaborativeSettings',
+    COMPETITIVE_SETTINGS = 'competitiveSettings',
+    COLLABORATIVE = 'collaborative',
+    COMPETITIVE = 'competitive'
 }

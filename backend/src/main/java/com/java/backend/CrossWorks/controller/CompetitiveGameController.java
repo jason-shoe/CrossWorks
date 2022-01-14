@@ -6,8 +6,10 @@ import com.java.backend.CrossWorks.CrossWorksApplication;
 import com.java.backend.CrossWorks.collaborative.CompetitiveGame;
 import com.java.backend.CrossWorks.collaborative.Player;
 import com.java.backend.CrossWorks.controller.dto.MoveRequest;
+import com.java.backend.CrossWorks.controller.dto.NewTeamRequest;
 import com.java.backend.CrossWorks.exceptions.InvalidParamException;
 import com.java.backend.CrossWorks.models.Crossword;
+import com.java.backend.CrossWorks.models.Grid;
 import com.java.backend.CrossWorks.service.CompetitiveGameService;
 import com.java.backend.CrossWorks.service.CrosswordService;
 import com.java.backend.CrossWorks.service.Views;
@@ -74,6 +76,7 @@ public class CompetitiveGameController {
 
     @MessageMapping("/competitive/create")
     public void create(@RequestBody Player player) {
+        log.info("Creating competitive game");
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("type", "createGame");
         simpMessagingTemplate.convertAndSendToUser(player.getPlayerId(), "/queue/messages",
@@ -112,23 +115,69 @@ public class CompetitiveGameController {
         return createResponse(gameService.setCrossword(selectedCrossword, gameId), "updateGame");
     }
 
+    @MessageMapping("competitive/new-team/{gameId}")
+    @SendTo("queue/competitive/{gameId}")
+    public ResponseEntity<CompetitiveGame> newTeam(@DestinationVariable String gameId,
+                                                   @RequestBody Player player)
+            throws InvalidParamException {
+        log.info("New Team: {}", gameId, player.getPlayerId());
+        return createResponse(gameService.newTeam(player, gameId), "updateGame");
+    }
+
+    @MessageMapping("competitive/switch-team/{gameId}")
+    @SendTo("queue/competitive/{gameId}")
+    public ResponseEntity<CompetitiveGame> switchTeam(@DestinationVariable String gameId,
+                                                      @RequestBody NewTeamRequest request)
+            throws InvalidParamException {
+        log.info("Switch Team: {}", gameId, request.player.getPlayerId(), request.teamNumber);
+        return createResponse(gameService.switchTeam(request.player, request.teamNumber, gameId),
+                "updateGame");
+    }
+
     @MessageMapping("competitive/start-game/{gameId}")
     @SendTo("queue/competitive/{gameId}")
     public ResponseEntity<CompetitiveGame> updateStartGame(@DestinationVariable String gameId)
             throws InvalidParamException {
         log.info("Start Game Crossword: {}", gameId);
-        return createResponse(gameService.startGame(gameId), "startGame");
+        CompetitiveGame currentGame = gameService.startGame(gameId);
+        sendTeamAnswers(currentGame);
+        return createResponse(currentGame, "startGame");
     }
 
     @MessageMapping("competitive/make-move/{gameId}")
     @SendTo("queue/competitive/{gameId}")
-    public ResponseEntity<CompetitiveGame> makeMove(@DestinationVariable String gameId,
-                                                    @RequestBody MoveRequest request)
+    public void makeMove(@DestinationVariable String gameId,
+                         @RequestBody MoveRequest request)
             throws Exception {
         log.info("Make move: {}", request.row, request.col, request.c);
-        return createResponse(
-                gameService.makeMove(gameId, request.player, request.row, request.col, request.c),
-                "updateGame");
+        CompetitiveGame currentGame =
+                gameService.makeMove(gameId, request.player, request.row, request.col, request.c);
+        sendTeamAnswers(currentGame);
+        return;
+    }
+
+    public void sendTeamAnswers(CompetitiveGame currentGame) {
+        int numTeams = currentGame.getNumTeams();
+        Grid[] unmaskedAnswers = currentGame.getTeamAnswers();
+        Grid[] maskedAnswers = currentGame.getMaskedTeamAnswers();
+
+        Grid[] temp = maskedAnswers.clone();
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("type", "competitiveAnswersUpdate");
+
+        for (int i = 0; i < numTeams; i++) {
+            temp[i] = unmaskedAnswers[i];
+            log.info("sending to team: {}",
+                    "/queue/messages/" + currentGame.getGameId() + "/" + i + "-team");
+
+            simpMessagingTemplate.convertAndSend(
+                    "queue/competitive/" + currentGame.getGameId() + "/" + i + "-team",
+                    ResponseEntity.ok().headers(responseHeaders).body(temp));
+            temp[i] = maskedAnswers[i];
+        }
+        return;
+
     }
 
     @MessageMapping("competitive/unpause/{gameId}")
@@ -170,5 +219,13 @@ public class CompetitiveGameController {
             throws InvalidParamException {
         log.info("leaving game : {}", gameId, player);
         return createResponse(gameService.leaveGame(gameId, player), "updateGame");
+    }
+
+    @MessageMapping("competitive/send-team-answers/{gameId}")
+    public void sendTeamAnswers(@DestinationVariable String gameId)
+            throws InvalidParamException {
+        log.info("sending team answer: {}", gameId);
+        CompetitiveGame currentGame = gameService.startGame(gameId);
+        sendTeamAnswers(currentGame);
     }
 }

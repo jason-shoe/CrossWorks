@@ -74,6 +74,7 @@ public class CollaborativeGameController {
 
     @MessageMapping("/collaborative/create")
     public void create(@RequestBody Player player) {
+        log.info("Creating collaborative game");
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set("type", "createGame");
         simpMessagingTemplate.convertAndSendToUser(player.getPlayerId(), "/queue/messages",

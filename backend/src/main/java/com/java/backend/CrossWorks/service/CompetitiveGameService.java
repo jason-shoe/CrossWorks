@@ -43,6 +43,7 @@ public class CompetitiveGameService {
     }
 
     public CompetitiveGame createGame(Player player) {
+        log.info("Creating Competitive Game: {}", player.getPlayerId());
         CompetitiveGame game = new CompetitiveGame();
         game.addPlayer(player);
 

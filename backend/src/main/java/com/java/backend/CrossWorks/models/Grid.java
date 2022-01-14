@@ -1,10 +1,11 @@
 package com.java.backend.CrossWorks.models;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Random;
 
 @Entity
-public class Grid {
+public class Grid implements Serializable {
     @Column(columnDefinition = "LONGTEXT")
     private final GridCell[][] board;
     private final int size;
@@ -24,7 +25,7 @@ public class Grid {
 
     // deep copy constructor
     public Grid(Grid other) {
-        size = other.getSize();
+        this.size = other.getSize();
         board = new GridCell[size][size];
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
