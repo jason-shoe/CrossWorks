@@ -1,50 +1,98 @@
 import { memo, useEffect, useCallback } from 'react';
 import { UserEntry } from '../shared/UserEntry';
 import Calendar from '../shared/Calendar';
-import { CollaborativeGame } from '../shared/types/backendTypes';
+import {
+    CollaborativeGame,
+    CompetitiveGame,
+    isCollaborative
+} from '../shared/types/backendTypes';
 import { InputNumber } from 'rsuite';
 import { UserInfo } from '@rsuite/icons';
 import styles from './Settings.module.scss';
-import { SendMessageFn, SocketEndpoint } from '../shared/types/socketTypes';
+import {
+    SendMessageFn,
+    CollaborativeSocketEndpoint,
+    CompetitiveSocketEndpoint,
+    createTeamSubscription,
+    isActiveTeamSubscription,
+    isTeamSubscription
+} from '../shared/types/socketTypes';
+import { CollaborativeParty } from './CollaborativeParty';
+import { CompetitiveParty } from './CompetitiveParty';
 
 interface SettingsProps {
-    isCollaborative: boolean;
+    createCollaborative: boolean;
     sendMessage: SendMessageFn;
+    addSubscription: (subscription: string) => void;
+    removeSubscription: (subscription: string) => void;
+    clientTeamNumber: number | undefined;
+    subscriptions: string[];
     clientId: string;
-    game?: CollaborativeGame;
+    game?: CollaborativeGame | CompetitiveGame;
 }
 
 export const Settings = memo(function SettingsFn(props: SettingsProps) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { isCollaborative, game, sendMessage, clientId } = props;
+    const {
+        createCollaborative,
+        game,
+        sendMessage,
+        clientId,
+        addSubscription,
+        removeSubscription,
+        subscriptions,
+        clientTeamNumber
+    } = props;
 
     const setCrosswordId = useCallback(
         (crosswordId: string) => {
             if (game !== undefined) {
                 sendMessage(
-                    SocketEndpoint.SET_CROSSWORD,
+                    createCollaborative
+                        ? CollaborativeSocketEndpoint.SET_CROSSWORD
+                        : CompetitiveSocketEndpoint.SET_CROSSWORD,
                     crosswordId,
                     game.gameId
                 );
             }
         },
-        [game, sendMessage]
+        [createCollaborative, game, sendMessage]
     );
 
     const startGame = useCallback(() => {
-        if (game !== undefined) {
-            sendMessage(SocketEndpoint.START_GAME, undefined, game.gameId);
+        if (game !== undefined && clientTeamNumber !== undefined) {
+            sendMessage(
+                createCollaborative
+                    ? CollaborativeSocketEndpoint.START_GAME
+                    : CompetitiveSocketEndpoint.START_GAME,
+                undefined,
+                game.gameId
+            );
         }
-    }, [game, sendMessage]);
+    }, [clientTeamNumber, createCollaborative, game, sendMessage]);
 
     useEffect(() => {
         if (clientId && game === undefined) {
             sendMessage(
-                SocketEndpoint.CREATE_GAME,
+                createCollaborative
+                    ? CollaborativeSocketEndpoint.CREATE_GAME
+                    : CompetitiveSocketEndpoint.CREATE_GAME,
                 JSON.stringify({ playerId: clientId })
             );
         }
-    }, [clientId, game, sendMessage]);
+    }, [clientId, createCollaborative, game, sendMessage]);
+
+    useEffect(() => {
+        subscriptions.forEach((subscription) => {
+            if (
+                game &&
+                isTeamSubscription(subscription) &&
+                !isActiveTeamSubscription(game.gameId, subscription)
+            ) {
+                removeSubscription(subscription);
+            }
+        });
+    }, [game, removeSubscription, subscriptions]);
 
     return (
         <div>
@@ -72,20 +120,19 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            <h2>Party {game ? game.playerIds.length : 0}</h2>
 
-                            {game &&
-                                game.playerIds.map(
-                                    (elem: string, index: number) => (
-                                        <UserEntry
-                                            name={elem}
-                                            icon={<UserInfo />}
-                                            key={index}
-                                        />
-                                    )
-                                )}
-                        </div>
+                        {game && isCollaborative(game) ? (
+                            <CollaborativeParty
+                                game={game}
+                                clientId={clientId}
+                            />
+                        ) : (
+                            <CompetitiveParty
+                                game={game}
+                                clientId={clientId}
+                                sendMessage={sendMessage}
+                            />
+                        )}
                     </div>
                     <button
                         className={styles.gameStartButton}

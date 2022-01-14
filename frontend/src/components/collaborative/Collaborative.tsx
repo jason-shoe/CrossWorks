@@ -2,7 +2,10 @@ import { memo, useState, useEffect, useMemo, useCallback } from 'react';
 import { CollaborativeGame, GameStatus } from '../shared/types/backendTypes';
 import { CellHintAnnotation } from '../shared/types/boardTypes';
 import './Collaborative.css';
-import { SendMessageFn, SocketEndpoint } from '../shared/types/socketTypes';
+import {
+    SendMessageFn,
+    CollaborativeSocketEndpoint
+} from '../shared/types/socketTypes';
 import { getCellAnnotations } from '../shared/util/crosswordUtil';
 import { Paused } from './Paused';
 import { CollaborativeGameBoard } from './CollaborativeGameBoard';
@@ -37,19 +40,29 @@ export const Collaborative = memo(function Collaborative(
     }, []);
 
     const pause = useCallback(
-        () => sendMessage(SocketEndpoint.PAUSE, undefined, game.gameId),
+        () =>
+            sendMessage(
+                CollaborativeSocketEndpoint.PAUSE,
+                undefined,
+                game.gameId
+            ),
         [game.gameId, sendMessage]
     );
 
     const giveUp = useCallback(
-        () => sendMessage(SocketEndpoint.GIVE_UP, undefined, game.gameId),
+        () =>
+            sendMessage(
+                CollaborativeSocketEndpoint.GIVE_UP,
+                undefined,
+                game.gameId
+            ),
         [game.gameId, sendMessage]
     );
 
     const returnToSettings = useCallback(
         () =>
             sendMessage(
-                SocketEndpoint.RETURN_TO_SETTINGS,
+                CollaborativeSocketEndpoint.RETURN_TO_SETTINGS,
                 undefined,
                 game.gameId
             ),
@@ -86,6 +99,7 @@ export const Collaborative = memo(function Collaborative(
                     </button>
                     <CollaborativeGameBoard
                         game={game}
+                        teamAnswers={game.teamAnswers}
                         clientId={clientId}
                         sendMessage={sendMessage}
                         cellAnnotations={cellAnnotations}
@@ -104,6 +118,7 @@ export const Collaborative = memo(function Collaborative(
         giveUp,
         leaveGame,
         returnToSettings,
+        clientId,
         winScreenClosed,
         closeWinScreen
     ]);

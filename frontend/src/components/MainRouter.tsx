@@ -7,7 +7,14 @@ import GameModeSelection from './homepage/GameModeSelection';
 import Homepage from './homepage/Homepage';
 import Settings from './settings/Settings';
 import { PageState } from './shared/types/pageState';
-import { CollaborativeGame, GameStatus } from './shared/types/backendTypes';
+import {
+    CollaborativeGame,
+    CompetitiveGame,
+    GameStatus,
+    Grid,
+    isCollaborative,
+    isGrids
+} from './shared/types/backendTypes';
 import {
     HttpResponse,
     HttpPlayerId,
@@ -16,9 +23,16 @@ import {
     BACKEND_URL
 } from './shared/types/httpTypes';
 import { JoinGameInput } from './homepage/JoinGameInput';
-import { SocketEndpoint, SocketSubscription } from './shared/types/socketTypes';
+import {
+    CollaborativeSocketEndpoint,
+    CompetitiveSocketEndpoint,
+    createTeamSubscription,
+    SocketSubscription
+} from './shared/types/socketTypes';
 
-type HttpMessageType = HttpResponse<HttpPlayerId | CollaborativeGame>;
+type HttpMessageType = HttpResponse<
+    HttpPlayerId | CollaborativeGame | CompetitiveGame | Grid[]
+>;
 
 const MainRouter = memo(function MainRouterFn() {
     const [pageState, setPageState] = useState<PageState>(PageState.MAIN);
@@ -27,10 +41,25 @@ const MainRouter = memo(function MainRouterFn() {
     const [clientConnected, setClientConnected] = useState(false);
     const [clientId, setClientId] = useState<string | undefined>();
     const [clientRef, setClientRef] = useState<any | undefined>(undefined);
-    const [game, setGame] = useState<CollaborativeGame | undefined>(undefined);
+    const [game, setGame] = useState<
+        CollaborativeGame | CompetitiveGame | undefined
+    >(undefined);
     const [subscriptions, setSubscriptions] = useState<string[]>([
         SocketSubscription.USER_MESSAGES
     ]);
+    const [competitiveTeamsAnswers, setCompetitiveTeamsAnswers] = useState<
+        Grid[] | undefined
+    >();
+
+    const clientTeamNumber = useMemo(
+        () =>
+            clientId && game && !isCollaborative(game)
+                ? game.playerIds.findIndex((team: string[]) =>
+                      team.includes(clientId)
+                  )
+                : undefined,
+        [clientId, game]
+    );
 
     const addSubscription = useCallback(
         (endpoint: string) => {
@@ -46,7 +75,11 @@ const MainRouter = memo(function MainRouterFn() {
     );
 
     const sendMessage = useCallback(
-        (endpoint: SocketEndpoint, payload?: any, gameId?: string) => {
+        (
+            endpoint: CollaborativeSocketEndpoint | CompetitiveSocketEndpoint,
+            payload?: any,
+            gameId?: string
+        ) => {
             let endpointFull: string = endpoint;
 
             if (gameId !== undefined) {
@@ -54,8 +87,10 @@ const MainRouter = memo(function MainRouterFn() {
             }
 
             if (payload === undefined) {
+                console.log('sending message', endpointFull);
                 clientRef.sendMessage(endpointFull);
             } else {
+                console.log('sending message', endpointFull, payload);
                 clientRef.sendMessage(endpointFull, payload);
             }
         },
@@ -64,9 +99,11 @@ const MainRouter = memo(function MainRouterFn() {
 
     const leaveGame = useCallback(() => {
         if (game) {
-            removeSubscription(SocketSubscription.GAME_PREFIX + game.gameId);
+            removeSubscription(
+                SocketSubscription.COLLABORATIVE_GAME_PREFIX + game.gameId
+            );
             sendMessage(
-                SocketEndpoint.LEAVE_GAME,
+                CollaborativeSocketEndpoint.LEAVE_GAME,
                 JSON.stringify({ playerId: clientId }),
                 game.gameId
             );
@@ -77,46 +114,69 @@ const MainRouter = memo(function MainRouterFn() {
 
     const onMessageReceive = useCallback(
         (msg: HttpMessageType) => {
-            console.log('this is the message', msg);
+            console.log('this is the message', msg, pageState);
             const messageType = msg.headers.type[0];
             if (isHttpPlayerId(msg.body)) {
                 if (messageType === MessageType.GET_PLAYER_ID) {
                     setClientId(msg.body);
                 }
+            } else if (isGrids(msg.body)) {
+                if (messageType === MessageType.TEAMS_ANSWERS_UPDATE) {
+                    setCompetitiveTeamsAnswers(msg.body);
+                }
             } else if (messageType === MessageType.CREATE_GAME) {
-                addSubscription(
-                    SocketSubscription.GAME_PREFIX + msg.body.gameId
-                );
+                if (isCollaborative(msg.body)) {
+                    addSubscription(
+                        SocketSubscription.COLLABORATIVE_GAME_PREFIX +
+                            msg.body.gameId
+                    );
+                } else {
+                    addSubscription(
+                        SocketSubscription.COMPETITIVE_GAME_PREFIX +
+                            msg.body.gameId
+                    );
+                }
+
                 setGame(msg.body);
             } else if (messageType === MessageType.UPDATE_GAME) {
                 setGame(msg.body);
             } else if (messageType === MessageType.BAD_GAME_ID) {
                 setPageState(PageState.BAD_JOIN_GAME);
             } else if (messageType === MessageType.START_GAME) {
+                if (clientTeamNumber !== undefined) {
+                    addSubscription(
+                        createTeamSubscription(
+                            msg.body.gameId,
+                            clientTeamNumber
+                        )
+                    );
+                    sendMessage(
+                        CompetitiveSocketEndpoint.SEND_TEAM_ANSWERS,
+                        undefined,
+                        msg.body.gameId
+                    );
+                }
                 setGame(msg.body);
                 setPageState(PageState.COLLABORATIVE);
             }
         },
-        [addSubscription]
+        [addSubscription, clientTeamNumber, pageState, sendMessage]
     );
 
     useEffect(() => {
         if (game !== undefined) {
-            // trying to join, and successfully got a game
-            if (
-                pageState === PageState.JOIN_GAME ||
-                pageState === PageState.BAD_JOIN_GAME
-            ) {
-                if (game.status === GameStatus.SETTINGS) {
-                    setPageState(PageState.COLLABORATIVE_SETTINGS);
-                } else {
-                    setPageState(PageState.COLLABORATIVE);
-                }
-            } else if (game.status === GameStatus.SETTINGS) {
-                setPageState(PageState.COLLABORATIVE_SETTINGS);
+            if (game.status === GameStatus.SETTINGS) {
+                isCollaborative(game)
+                    ? setPageState(PageState.COLLABORATIVE_SETTINGS)
+                    : setPageState(PageState.COMPETITIVE_SETTINGS);
+            } else if (game.status === GameStatus.STARTED) {
+                console.log(isCollaborative(game));
+                isCollaborative(game)
+                    ? setPageState(PageState.COLLABORATIVE)
+                    : setPageState(PageState.COMPETITIVE);
             }
         }
-    }, [game, pageState]);
+    }, [addSubscription, clientTeamNumber, game, pageState, sendMessage]);
 
     const component = useMemo(() => {
         if (pageState === PageState.MAIN) {
@@ -142,18 +202,35 @@ const MainRouter = memo(function MainRouterFn() {
         ) {
             return clientId ? (
                 <Settings
-                    isCollaborative={
-                        pageState === PageState.COLLABORATIVE_SETTINGS
+                    createCollaborative={
+                        PageState.COLLABORATIVE_SETTINGS === pageState
                     }
                     sendMessage={sendMessage}
+                    addSubscription={addSubscription}
+                    removeSubscription={removeSubscription}
+                    subscriptions={subscriptions}
                     clientId={clientId}
+                    clientTeamNumber={clientTeamNumber}
                     game={game}
                 />
             ) : undefined;
         } else if (pageState === PageState.COMPETITIVE) {
-            return <Competitive />;
+            return competitiveTeamsAnswers &&
+                clientTeamNumber !== undefined &&
+                clientId &&
+                game &&
+                !isCollaborative(game) ? (
+                <Competitive
+                    game={game}
+                    clientId={clientId}
+                    sendMessage={sendMessage}
+                    leaveGame={leaveGame}
+                    teamsAnswers={competitiveTeamsAnswers}
+                    clientTeamNumber={clientTeamNumber}
+                />
+            ) : undefined;
         } else {
-            return clientId && game ? (
+            return clientId && game && isCollaborative(game) ? (
                 <Collaborative
                     game={game}
                     clientId={clientId}
@@ -162,7 +239,18 @@ const MainRouter = memo(function MainRouterFn() {
                 />
             ) : undefined;
         }
-    }, [pageState, clientId, addSubscription, sendMessage, game, leaveGame]);
+    }, [
+        pageState,
+        clientId,
+        addSubscription,
+        sendMessage,
+        clientTeamNumber,
+        removeSubscription,
+        subscriptions,
+        game,
+        competitiveTeamsAnswers,
+        leaveGame
+    ]);
 
     return (
         <div>
@@ -172,7 +260,7 @@ const MainRouter = memo(function MainRouterFn() {
                 onMessage={onMessageReceive}
                 ref={setClientRef}
                 onConnect={() => {
-                    sendMessage(SocketEndpoint.GET_PLAYER_ID);
+                    sendMessage(CollaborativeSocketEndpoint.GET_PLAYER_ID);
                     setClientConnected(true);
                 }}
                 onDisconnect={() => setClientConnected(false)}

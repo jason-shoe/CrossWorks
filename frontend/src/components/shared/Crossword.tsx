@@ -1,5 +1,5 @@
-import { memo, useEffect, useCallback } from 'react';
-import { Grid } from './types/backendTypes';
+import { memo, useEffect, useCallback, useMemo } from 'react';
+import { Grid, isCollaborativeGameId } from './types/backendTypes';
 import {
     CellHintAnnotation,
     Direction,
@@ -8,20 +8,23 @@ import {
 } from '../shared/types/boardTypes';
 import styles from './Crossword.module.scss';
 import { CrosswordCell } from './CrosswordCell';
-import { SendMessageFn, SocketEndpoint } from './types/socketTypes';
+import {
+    SendMessageFn,
+    CollaborativeSocketEndpoint,
+    CompetitiveSocketEndpoint
+} from './types/socketTypes';
 import { BoardVal } from './types/httpTypes';
 import { isEmpty, isLetter } from './util/crosswordUtil';
 
 interface CrosswordProps {
     size: number;
     inputCells: CellHintAnnotation[][];
-    setNavSettings: (coords: NavigationSettings) => void;
     answers: Grid;
-    sendMessage: SendMessageFn;
-    gameId: string;
-    clientId: string;
-    canEdit: boolean;
+    gameId?: string;
+    clientId?: string;
+    sendMessage?: SendMessageFn;
     groundTruth?: Grid;
+    setNavSettings?: (coords: NavigationSettings) => void;
     navSettings?: NavigationSettings;
 }
 
@@ -36,19 +39,29 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
         sendMessage,
         gameId,
         clientId,
-        canEdit,
         groundTruth
     } = props;
     const cells = [...Array(size).keys()];
 
+    const canEdit = useMemo(
+        () => gameId && clientId && sendMessage,
+        [clientId, gameId, sendMessage]
+    );
+    const canNav = useMemo(
+        () => navSettings && setNavSettings,
+        [navSettings, setNavSettings]
+    );
+
     const handleChange = useCallback(
         (letter: string, newSettings?: NavigationSettings) => {
-            if (!navSettings) {
+            if (!canEdit || !canNav) {
                 return;
             }
-            const settings = newSettings ?? navSettings;
-            sendMessage(
-                SocketEndpoint.MAKE_MOVE,
+            const settings = newSettings ?? navSettings!;
+            sendMessage!(
+                isCollaborativeGameId(gameId!)
+                    ? CollaborativeSocketEndpoint.MAKE_MOVE
+                    : CompetitiveSocketEndpoint.MAKE_MOVE,
                 JSON.stringify({
                     row: settings.coordinates.row,
                     col: settings.coordinates.col,
@@ -58,33 +71,33 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
                 gameId
             );
         },
-        [gameId, navSettings, sendMessage]
+        [clientId, gameId, navSettings, sendMessage]
     );
 
     const handleCoordinateChange = useCallback(
         (shift: number, newDirection: Direction) => {
-            if (!navSettings) {
+            if (!canEdit) {
                 return;
             }
             let newSettings;
-            if (newDirection !== navSettings.direction) {
+            if (newDirection !== navSettings!.direction) {
                 newSettings = {
-                    ...navSettings,
+                    ...navSettings!,
                     direction: newDirection
                 };
-                setNavSettings(newSettings);
+                setNavSettings!(newSettings);
                 return newSettings;
             }
             let startingIndex: number;
             if (newDirection === Direction.ACROSS) {
                 startingIndex =
-                    navSettings.coordinates.row * size +
-                    navSettings.coordinates.col +
+                    navSettings!.coordinates.row * size +
+                    navSettings!.coordinates.col +
                     shift;
             } else {
                 startingIndex =
-                    navSettings.coordinates.col * size +
-                    navSettings.coordinates.row +
+                    navSettings!.coordinates.col * size +
+                    navSettings!.coordinates.row +
                     shift;
             }
 
@@ -102,88 +115,88 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
                         coordinates: { row: newRow, col: newCol },
                         direction: newDirection
                     };
-                    setNavSettings(newSettings);
+                    setNavSettings!(newSettings);
                     return newSettings;
                 }
             }
         },
-        [inputCells, navSettings, setNavSettings, size]
+        [canEdit, inputCells, navSettings, setNavSettings, size]
     );
 
     const handleInputCoordinateChange = useCallback(
         (considerFilled?: boolean) => {
-            if (!navSettings) {
+            if (!canNav) {
                 return;
             }
             let newSettings;
-            if (navSettings.direction === Direction.ACROSS) {
+            if (navSettings!.direction === Direction.ACROSS) {
                 for (
-                    let i = navSettings.coordinates.col + 1;
+                    let i = navSettings!.coordinates.col + 1;
                     i < size && i >= 0;
                     i++
                 ) {
-                    if (!inputCells[navSettings.coordinates.row][i].isValid) {
+                    if (!inputCells[navSettings!.coordinates.row][i].isValid) {
                         return navSettings;
                     }
                     if (
                         (!isEmpty(
-                            answers.grid[navSettings.coordinates.row][i]
+                            answers.grid[navSettings!.coordinates.row][i]
                         ) &&
                             considerFilled) ||
-                        isEmpty(answers.grid[navSettings.coordinates.row][i])
+                        isEmpty(answers.grid[navSettings!.coordinates.row][i])
                     ) {
                         newSettings = {
                             coordinates: {
-                                row: navSettings.coordinates.row,
+                                row: navSettings!.coordinates.row,
                                 col: i
                             },
-                            direction: navSettings.direction
+                            direction: navSettings!.direction
                         };
-                        setNavSettings(newSettings);
+                        setNavSettings!(newSettings);
                         return newSettings;
                     }
                 }
             } else {
                 for (
-                    let i = navSettings.coordinates.row + 1;
+                    let i = navSettings!.coordinates.row + 1;
                     i < size && i >= 0;
                     i++
                 ) {
-                    if (!inputCells[i][navSettings.coordinates.col].isValid) {
+                    if (!inputCells[i][navSettings!.coordinates.col].isValid) {
                         return navSettings;
                     }
                     if (
                         (!isEmpty(
-                            answers.grid[i][navSettings.coordinates.col]
+                            answers.grid[i][navSettings!.coordinates.col]
                         ) &&
                             considerFilled) ||
-                        isEmpty(answers.grid[i][navSettings.coordinates.col])
+                        isEmpty(answers.grid[i][navSettings!.coordinates.col])
                     ) {
                         newSettings = {
                             coordinates: {
                                 row: i,
-                                col: navSettings.coordinates.col
+                                col: navSettings!.coordinates.col
                             },
-                            direction: navSettings.direction
+                            direction: navSettings!.direction
                         };
-                        setNavSettings(newSettings);
+                        setNavSettings!(newSettings);
                         return newSettings;
                     }
                 }
             }
             return navSettings;
         },
-        [answers.grid, inputCells, navSettings, setNavSettings, size]
+        [answers.grid, canNav, inputCells, navSettings, setNavSettings, size]
     );
 
     const handleKeyDown = useCallback(
         (event: KeyboardEvent) => {
-            if (!navSettings) {
+            if (!canNav) {
                 return;
             }
             const wasFilled = !isEmpty(
-                answers.grid[navSettings.coordinates.row][
-                    navSettings.coordinates.col
+                answers.grid[navSettings!.coordinates.row][
+                    navSettings!.coordinates.col
                 ]
             );
             if (event.key === Keys.ARROW_UP) {
@@ -194,15 +207,15 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
                 handleCoordinateChange(1, Direction.DOWN);
             } else if (event.key === Keys.ARROW_LEFT) {
                 handleCoordinateChange(-1, Direction.ACROSS);
-            } else if (isLetter(event.key) && canEdit) {
+            } else if (isLetter(event.key) && sendMessage) {
                 handleChange(event.key.toUpperCase());
                 handleInputCoordinateChange(wasFilled);
-            } else if (event.key === Keys.BACKSPACE && canEdit) {
+            } else if (event.key === Keys.BACKSPACE && sendMessage) {
                 let settings;
                 if (!wasFilled) {
                     settings = handleCoordinateChange(
                         -1,
-                        navSettings.direction
+                        navSettings!.direction
                     );
                 }
                 handleChange(BoardVal.EMPTY, settings);
@@ -210,22 +223,23 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
         },
         [
             answers.grid,
-            canEdit,
+            canNav,
             handleChange,
             handleCoordinateChange,
             handleInputCoordinateChange,
-            navSettings
+            navSettings,
+            sendMessage
         ]
     );
 
     useEffect(() => {
-        if (navSettings) {
+        if (canNav) {
             window.addEventListener('keydown', handleKeyDown);
             return () => {
                 window.removeEventListener('keydown', handleKeyDown);
             };
         }
-    }, [handleKeyDown, navSettings]);
+    }, [canNav, handleKeyDown, navSettings]);
 
     return (
         <div>

@@ -9,10 +9,11 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import java.io.Serializable;
 import java.util.UUID;
 
 @Entity
-public class TeamAnswers {
+public class TeamAnswers implements Serializable {
     @Id
     private final String teamAnswersId;
 

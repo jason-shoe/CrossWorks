@@ -9,13 +9,31 @@ export enum GameStatus {
     LOST = 'LOST'
 }
 
-export interface CollaborativeGame {
-    gameId: string;
+export function isCollaborativeGameId(gameId: string) {
+    return gameId.startsWith('collaborative_game');
+}
+
+export function isCollaborative(
+    object: CollaborativeGame | CompetitiveGame
+): object is CollaborativeGame {
+    return isCollaborativeGameId(object.gameId);
+}
+
+export interface CollaborativeGame extends Game {
     playerIds: string[];
+    teamAnswers: Grid;
+}
+
+export interface CompetitiveGame extends Game {
+    playerIds: string[][];
+    teamAnswers: Grid[];
+}
+
+export interface Game {
+    gameId: string;
     crosswordId: string;
     status: GameStatus;
     crossword: CrosswordData;
-    teamAnswers: Grid;
     board: Grid | undefined;
 }
 
@@ -24,6 +42,10 @@ export interface Grid {
     id: number;
     numNonBlock: number;
     size: number;
+}
+
+export function isGrids(object: any): object is Grid[] {
+    return Array.isArray(object) && object.length !== 0 && 'grid' in object[0];
 }
 
 export interface CrosswordData {

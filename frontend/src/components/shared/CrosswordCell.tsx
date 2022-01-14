@@ -11,9 +11,9 @@ interface CrosswordCellProps {
     row: number;
     col: number;
     annotationData: CellHintAnnotation;
-    setNavSettings: (coords: NavigationSettings) => void;
     value: string | undefined;
     groundTruth: string | undefined;
+    setNavSettings?: (coords: NavigationSettings) => void;
     navSettings?: NavigationSettings;
 }
 
@@ -61,7 +61,7 @@ export const CrosswordCell = memo(function Crossword(
 
     const onClick = useCallback(
         () =>
-            navSettings
+            navSettings && setNavSettings
                 ? setNavSettings({
                       coordinates: {
                           row: row,
@@ -94,7 +94,11 @@ export const CrosswordCell = memo(function Crossword(
     }, [annotationData]);
 
     const [processedValue, cellStyle] = useMemo(() => {
-        if (value === BoardVal.BLOCK) {
+        if (
+            value === BoardVal.BLOCK ||
+            value === BoardVal.CORRECT ||
+            value === BoardVal.INCORRECT
+        ) {
             return [undefined, styles.cellValue];
         }
         if (groundTruth) {
@@ -106,13 +110,23 @@ export const CrosswordCell = memo(function Crossword(
         return [value, styles.cellValue];
     }, [groundTruth, value]);
 
+    const backgroundColor = useMemo(() => {
+        if (value === BoardVal.CORRECT) {
+            return styles.greenBackground;
+        }
+        if (value === BoardVal.INCORRECT) {
+            return styles.redBackground;
+        }
+        return styles.whiteBackground;
+    }, [value]);
+
     return (
         <div
-            className={classNames(className, styles.inputCell)}
+            className={classNames(backgroundColor, className, styles.inputCell)}
             onClick={onClick}
         >
             <p className={styles.hintAnnotation}>{annotation}</p>
-            <p className={cellStyle}>{processedValue}</p>
+            <div className={cellStyle}>{processedValue}</div>
         </div>
     );
 });

@@ -5,7 +5,9 @@ import { SendMessageFn } from '../shared/types/socketTypes';
 import {
     Clue,
     CollaborativeGame,
-    GameStatus
+    CompetitiveGame,
+    GameStatus,
+    Grid
 } from '../shared/types/backendTypes';
 import {
     CellHintAnnotation,
@@ -15,7 +17,8 @@ import {
 import { clueHash, getClueProgress } from '../shared/util/crosswordUtil';
 
 interface CollaborativeGameBoardProps {
-    game: CollaborativeGame;
+    game: CollaborativeGame | CompetitiveGame;
+    teamAnswers: Grid;
     clientId: string;
     sendMessage: SendMessageFn;
     cellAnnotations: CellHintAnnotation[][];
@@ -24,7 +27,7 @@ interface CollaborativeGameBoardProps {
 export const CollaborativeGameBoard = memo(function CollaborativeGameFn(
     props: CollaborativeGameBoardProps
 ) {
-    const { game, sendMessage, cellAnnotations, clientId } = props;
+    const { game, teamAnswers, sendMessage, cellAnnotations, clientId } = props;
     const [clueProgress, setClueProgress] = useState<Map<string, number>>(
         new Map()
     );
@@ -36,13 +39,9 @@ export const CollaborativeGameBoard = memo(function CollaborativeGameFn(
 
     useEffect(() => {
         setClueProgress(
-            getClueProgress(
-                game.crossword.clues,
-                cellAnnotations,
-                game.teamAnswers
-            )
+            getClueProgress(game.crossword.clues, cellAnnotations, teamAnswers)
         );
-    }, [cellAnnotations, game.crossword.clues, game.teamAnswers]);
+    }, [cellAnnotations, game.crossword.clues, teamAnswers]);
 
     return (
         <div className="collaborative-page-div">
@@ -50,14 +49,13 @@ export const CollaborativeGameBoard = memo(function CollaborativeGameFn(
                 <Crossword
                     size={game.crossword.size}
                     inputCells={cellAnnotations}
-                    setNavSettings={setNavSettings}
-                    navSettings={navSettings}
-                    answers={game.teamAnswers}
+                    answers={teamAnswers}
                     sendMessage={sendMessage}
                     gameId={game.gameId}
                     clientId={clientId}
-                    canEdit={game.status === GameStatus.STARTED}
                     groundTruth={game.board}
+                    setNavSettings={setNavSettings}
+                    navSettings={navSettings}
                 />
             </div>
 

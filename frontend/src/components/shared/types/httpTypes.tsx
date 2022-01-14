@@ -13,7 +13,8 @@ export enum MessageType {
     UPDATE_GAME = 'updateGame',
     CREATE_GAME = 'createGame',
     BAD_GAME_ID = 'badGameId',
-    START_GAME = 'startGame'
+    START_GAME = 'startGame',
+    TEAMS_ANSWERS_UPDATE = 'competitiveAnswersUpdate'
 }
 
 export type HttpPlayerId = string;
@@ -24,5 +25,7 @@ export function isHttpPlayerId(object: any): object is HttpPlayerId {
 
 export enum BoardVal {
     BLOCK = '#',
-    EMPTY = ' '
+    EMPTY = ' ',
+    CORRECT = '1',
+    INCORRECT = '0'
 }

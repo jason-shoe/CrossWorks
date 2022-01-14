@@ -2,8 +2,9 @@ import { ChangeEvent, memo, useCallback, useState } from 'react';
 import { PageState } from '../shared/types/pageState';
 import {
     SendMessageFn,
-    SocketEndpoint,
-    SocketSubscription
+    CollaborativeSocketEndpoint,
+    SocketSubscription,
+    CompetitiveSocketEndpoint
 } from '../shared/types/socketTypes';
 
 interface JoinGameInputProps {
@@ -29,13 +30,28 @@ export const JoinGameInput = memo(function JoinGameInputFn(
     );
 
     const joinGame = useCallback(() => {
-        addSubscription(SocketSubscription.GAME_PREFIX + gameId);
-        sendMessage(
-            SocketEndpoint.CONNECT,
-            JSON.stringify({ playerId: clientId }),
-            gameId
-        );
-    }, [addSubscription, gameId, sendMessage, clientId]);
+        if (gameId.includes('collaborative_game')) {
+            addSubscription(
+                SocketSubscription.COLLABORATIVE_GAME_PREFIX + gameId
+            );
+            sendMessage(
+                CollaborativeSocketEndpoint.CONNECT,
+                JSON.stringify({ playerId: clientId }),
+                gameId
+            );
+        } else if (gameId.includes('competitive_game')) {
+            addSubscription(
+                SocketSubscription.COMPETITIVE_GAME_PREFIX + gameId
+            );
+            sendMessage(
+                CompetitiveSocketEndpoint.CONNECT,
+                JSON.stringify({ playerId: clientId }),
+                gameId
+            );
+        } else {
+            setPageState(PageState.BAD_JOIN_GAME);
+        }
+    }, [gameId, addSubscription, sendMessage, clientId, setPageState]);
 
     return (
         <div className={`max-w-2xl m-auto mt-20 space-y-8`}>
