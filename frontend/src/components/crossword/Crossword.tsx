@@ -1,5 +1,5 @@
 import { memo, useEffect, useCallback, useMemo } from 'react';
-import { Grid, isCollaborativeGameId } from '../shared/types/backendTypes';
+import { Grid } from '../shared/types/backendTypes';
 import {
     CellHintAnnotation,
     Direction,
@@ -8,11 +8,7 @@ import {
 } from '../shared/types/boardTypes';
 import styles from './Crossword.module.scss';
 import { CrosswordCell } from './CrosswordCell';
-import {
-    SendMessageFn,
-    CollaborativeSocketEndpoint,
-    CompetitiveSocketEndpoint
-} from '../shared/types/socketTypes';
+import { SendMessageFn, GameSocketEndpoint } from '../shared/types/socketTypes';
 import { BoardVal } from '../shared/types/httpTypes';
 import { isEmpty, isLetter } from '../shared/util/crosswordUtil';
 
@@ -59,19 +55,16 @@ export const Crossword = memo(function Crossword(props: CrosswordProps) {
             }
             const settings = newSettings ?? navSettings!;
             sendMessage!(
-                isCollaborativeGameId(gameId!)
-                    ? CollaborativeSocketEndpoint.MAKE_MOVE
-                    : CompetitiveSocketEndpoint.MAKE_MOVE,
+                GameSocketEndpoint.MAKE_MOVE,
                 JSON.stringify({
                     row: settings.coordinates.row,
                     col: settings.coordinates.col,
-                    c: letter,
-                    player: { playerId: clientId }
+                    c: letter
                 }),
                 gameId
             );
         },
-        [canEdit, canNav, clientId, gameId, navSettings, sendMessage]
+        [canEdit, canNav, gameId, navSettings, sendMessage]
     );
 
     const handleCoordinateChange = useCallback(

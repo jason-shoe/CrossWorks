@@ -11,7 +11,7 @@ import { isCollaborative } from './shared/types/backendTypes';
 import { BACKEND_URL } from './shared/types/httpTypes';
 import { JoinGameInput } from './homepage/JoinGameInput';
 import {
-    CollaborativeSocketEndpoint,
+    PlayerSocketEndpoint,
     SocketSubscription
 } from './shared/types/socketTypes';
 import { useSubscriptions } from './hooks/useSubscriptions';
@@ -33,6 +33,8 @@ const MainRouter = memo(function MainRouterFn() {
 
     const {
         clientId,
+        clientName,
+        setClientName,
         clientTeamNumber,
         setClientRef,
         sendMessage,
@@ -48,38 +50,43 @@ const MainRouter = memo(function MainRouterFn() {
 
     const leaveGame = useCallback(() => {
         if (game) {
-            removeSubscription(
-                SocketSubscription.COLLABORATIVE_GAME_PREFIX + game.gameId
-            );
+            removeSubscription(SocketSubscription.GAME_PREFIX + game.gameId);
             sendMessage(
-                CollaborativeSocketEndpoint.LEAVE_GAME,
-                JSON.stringify({ playerId: clientId }),
+                PlayerSocketEndpoint.LEAVE_GAME,
+                undefined,
                 game.gameId
             );
             setPageState(PageState.MAIN);
             setGame(undefined);
         }
-    }, [
-        clientId,
-        game,
-        removeSubscription,
-        sendMessage,
-        setGame,
-        setPageState
-    ]);
+    }, [game, removeSubscription, sendMessage, setGame, setPageState]);
 
     const component = useMemo(() => {
         switch (pageState) {
             case PageState.MAIN:
-                return <Homepage setPageState={setPageState} />;
+                return (
+                    <Homepage
+                        setPageState={setPageState}
+                        clientName={clientName}
+                        setClientName={setClientName}
+                    />
+                );
             case PageState.CREATE_GAME:
-                return <GameModeSelection setPageState={setPageState} />;
+                return (
+                    <GameModeSelection
+                        setPageState={setPageState}
+                        clientName={clientName}
+                        setClientName={setClientName}
+                    />
+                );
             case PageState.JOIN_GAME:
             case PageState.BAD_JOIN_GAME:
                 return clientId ? (
                     <JoinGameInput
                         setPageState={setPageState}
                         clientId={clientId}
+                        clientName={clientName}
+                        setClientName={setClientName}
                         addSubscription={addSubscription}
                         sendMessage={sendMessage}
                         hasFailed={pageState === PageState.BAD_JOIN_GAME}
@@ -97,6 +104,7 @@ const MainRouter = memo(function MainRouterFn() {
                         subscriptions={subscriptions}
                         clientId={clientId}
                         clientTeamNumber={clientTeamNumber}
+                        clientName={clientName}
                         game={game}
                     />
                 ) : undefined;
@@ -130,14 +138,16 @@ const MainRouter = memo(function MainRouterFn() {
     }, [
         pageState,
         setPageState,
+        clientName,
+        setClientName,
         clientId,
         addSubscription,
         sendMessage,
         removeSubscription,
         subscriptions,
-        clientTeamNumber,
         game,
         competitiveTeamsAnswers,
+        clientTeamNumber,
         leaveGame
     ]);
 
@@ -149,7 +159,7 @@ const MainRouter = memo(function MainRouterFn() {
                 onMessage={onMessageReceive}
                 ref={setClientRef}
                 onConnect={() => {
-                    sendMessage(CollaborativeSocketEndpoint.GET_PLAYER_ID);
+                    sendMessage(PlayerSocketEndpoint.GET_PLAYER_ID);
                 }}
                 debug={false}
             />

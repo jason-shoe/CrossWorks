@@ -28,7 +28,7 @@ export const Calendar = memo(function CrosswordCalendarFn(
     >([]);
 
     useEffect(() => {
-        fetch(BACKEND_URL + 'collaborative-game/dates')
+        fetch(BACKEND_URL + 'game/dates')
             .then((response) => response.json())
             .then((data) => {
                 const sortedCrosswords: CrosswordIdDate[] = data

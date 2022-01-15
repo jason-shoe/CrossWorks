@@ -4,7 +4,8 @@ import {
     CompetitiveGame,
     Grid,
     isCollaborative,
-    isGrids
+    isGrids,
+    PlayerInfo
 } from '../shared/types/backendTypes';
 import {
     HttpPlayerId,
@@ -14,9 +15,9 @@ import {
 } from '../shared/types/httpTypes';
 import { PageState } from '../shared/types/pageState';
 import {
-    CollaborativeSocketEndpoint,
-    CompetitiveSocketEndpoint,
     createTeamSubscription,
+    GameSocketEndpoint,
+    PlayerSocketEndpoint,
     SocketSubscription
 } from '../shared/types/socketTypes';
 
@@ -39,6 +40,7 @@ export function useWebsocket(props: useWebsocketProps) {
     } = props;
     const [clientRef, setClientRef] = useState<any | undefined>(undefined);
     const [clientId, setClientId] = useState<string | undefined>();
+    const [clientName, setClientName] = useState<string>('');
 
     type HttpMessageType = HttpResponse<
         HttpPlayerId | CollaborativeGame | CompetitiveGame | Grid[]
@@ -46,8 +48,8 @@ export function useWebsocket(props: useWebsocketProps) {
     const clientTeamNumber = useMemo(
         () =>
             clientId && game && !isCollaborative(game)
-                ? game.playerIds.findIndex((team: string[]) =>
-                      team.includes(clientId)
+                ? game.players.findIndex((team: PlayerInfo[]) =>
+                      team.map((player) => player.playerId).includes(clientId)
                   )
                 : undefined,
         [clientId, game]
@@ -55,7 +57,7 @@ export function useWebsocket(props: useWebsocketProps) {
 
     const sendMessage = useCallback(
         (
-            endpoint: CollaborativeSocketEndpoint | CompetitiveSocketEndpoint,
+            endpoint: PlayerSocketEndpoint | GameSocketEndpoint,
             payload?: any,
             gameId?: string
         ) => {
@@ -89,13 +91,11 @@ export function useWebsocket(props: useWebsocketProps) {
             } else if (messageType === MessageType.CREATE_GAME) {
                 if (isCollaborative(msg.body)) {
                     addSubscription(
-                        SocketSubscription.COLLABORATIVE_GAME_PREFIX +
-                            msg.body.gameId
+                        SocketSubscription.GAME_PREFIX + msg.body.gameId
                     );
                 } else {
                     addSubscription(
-                        SocketSubscription.COMPETITIVE_GAME_PREFIX +
-                            msg.body.gameId
+                        SocketSubscription.GAME_PREFIX + msg.body.gameId
                     );
                 }
 
@@ -113,7 +113,7 @@ export function useWebsocket(props: useWebsocketProps) {
                         )
                     );
                     sendMessage(
-                        CompetitiveSocketEndpoint.SEND_TEAM_ANSWERS,
+                        GameSocketEndpoint.SEND_TEAM_ANSWERS,
                         undefined,
                         msg.body.gameId
                     );
@@ -135,6 +135,8 @@ export function useWebsocket(props: useWebsocketProps) {
 
     return {
         clientId,
+        clientName,
+        setClientName,
         clientTeamNumber,
         setClientRef,
         sendMessage,

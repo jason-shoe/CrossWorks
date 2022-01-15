@@ -6,5 +6,6 @@ export enum PageState {
     COLLABORATIVE_SETTINGS = 'collaborativeSettings',
     COMPETITIVE_SETTINGS = 'competitiveSettings',
     COLLABORATIVE = 'collaborative',
-    COMPETITIVE = 'competitive'
+    COMPETITIVE = 'competitive',
+    SET_PLAYER_NAME = 'setPlayerName'
 }

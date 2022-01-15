@@ -2,14 +2,16 @@ import { ChangeEvent, memo, useCallback, useState } from 'react';
 import { PageState } from '../shared/types/pageState';
 import {
     SendMessageFn,
-    CollaborativeSocketEndpoint,
     SocketSubscription,
-    CompetitiveSocketEndpoint
+    PlayerSocketEndpoint
 } from '../shared/types/socketTypes';
+import { UsernameInput } from './UsernameInput';
 
 interface JoinGameInputProps {
     setPageState: (state: PageState) => void;
     clientId: string;
+    clientName: string;
+    setClientName: (clientName: string) => void;
     addSubscription: (subscription: string) => void;
     sendMessage: SendMessageFn;
     hasFailed: boolean;
@@ -19,8 +21,15 @@ export const JoinGameInput = memo(function JoinGameInputFn(
     props: JoinGameInputProps
 ) {
     const [gameId, setGameId] = useState('');
-    const { setPageState, clientId, addSubscription, sendMessage, hasFailed } =
-        props;
+    const {
+        setPageState,
+        clientId,
+        clientName,
+        setClientName,
+        addSubscription,
+        sendMessage,
+        hasFailed
+    } = props;
 
     const handleChange = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
@@ -30,28 +39,14 @@ export const JoinGameInput = memo(function JoinGameInputFn(
     );
 
     const joinGame = useCallback(() => {
-        if (gameId.includes('collaborative_game')) {
-            addSubscription(
-                SocketSubscription.COLLABORATIVE_GAME_PREFIX + gameId
-            );
-            sendMessage(
-                CollaborativeSocketEndpoint.CONNECT,
-                JSON.stringify({ playerId: clientId }),
-                gameId
-            );
-        } else if (gameId.includes('competitive_game')) {
-            addSubscription(
-                SocketSubscription.COMPETITIVE_GAME_PREFIX + gameId
-            );
-            sendMessage(
-                CompetitiveSocketEndpoint.CONNECT,
-                JSON.stringify({ playerId: clientId }),
-                gameId
-            );
+        if (gameId.includes('game')) {
+            addSubscription(SocketSubscription.GAME_PREFIX + gameId);
+            sendMessage(PlayerSocketEndpoint.SET_PLAYER_NAME, clientName);
+            sendMessage(PlayerSocketEndpoint.CONNECT, clientName, gameId);
         } else {
             setPageState(PageState.BAD_JOIN_GAME);
         }
-    }, [gameId, addSubscription, sendMessage, clientId, setPageState]);
+    }, [gameId, addSubscription, sendMessage, clientName, setPageState]);
 
     return (
         <div className={`max-w-2xl m-auto mt-20 space-y-8`}>
@@ -61,6 +56,10 @@ export const JoinGameInput = memo(function JoinGameInputFn(
                     Join a Game
                 </p>
                 <p>Description</p>
+                <UsernameInput
+                    clientName={clientName}
+                    setClientName={setClientName}
+                />
             </div>
             <div className={`flex justify-between space-x-6`}>
                 <div>Input Game ID</div>

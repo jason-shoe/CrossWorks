@@ -1,6 +1,6 @@
 import { UserInfo } from '@rsuite/icons';
 import { memo } from 'react';
-import { CollaborativeGame } from '../shared/types/backendTypes';
+import { CollaborativeGame, PlayerInfo } from '../shared/types/backendTypes';
 import { UserEntry } from '../shared/UserEntry';
 
 interface CollaborativePartyProps {
@@ -11,9 +11,9 @@ export const CollaborativeParty = memo(function CollaborativePartyFn({
 }: CollaborativePartyProps) {
     return (
         <div>
-            <h2>Party {game ? game.playerIds.length : 0}</h2>
-            {game.playerIds.map((elem: string, index: number) => (
-                <UserEntry name={elem} icon={<UserInfo />} key={index} />
+            <h2>Party {game ? game.players.length : 0}</h2>
+            {game.players.map((elem: PlayerInfo, index: number) => (
+                <UserEntry info={elem} icon={<UserInfo />} key={index} />
             ))}
         </div>
     );

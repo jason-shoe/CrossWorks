@@ -1,8 +1,8 @@
 import { UserInfo } from '@rsuite/icons';
 import { memo, useCallback, useMemo } from 'react';
-import { CompetitiveGame } from '../shared/types/backendTypes';
+import { CompetitiveGame, PlayerInfo } from '../shared/types/backendTypes';
 import {
-    CompetitiveSocketEndpoint,
+    PlayerSocketEndpoint,
     SendMessageFn
 } from '../shared/types/socketTypes';
 import { UserEntry } from '../shared/UserEntry';
@@ -10,52 +10,41 @@ import { UserEntry } from '../shared/UserEntry';
 interface CompetitivePartyProps {
     game: CompetitiveGame;
     clientId: string;
+    clientTeamNumber: number | undefined;
     sendMessage: SendMessageFn;
 }
 export const CompetitiveParty = memo(function CompetitivePartyFn({
     game,
     clientId,
+    clientTeamNumber,
     sendMessage
 }: CompetitivePartyProps) {
-    const clientTeamNumber = useMemo(
-        () =>
-            game.playerIds.findIndex((team: string[]) =>
-                team.includes(clientId)
-            ),
-        [clientId, game.playerIds]
-    );
-
     const hasTeammates = useMemo(
-        () => game.playerIds[clientTeamNumber].length !== 1,
-        [clientTeamNumber, game.playerIds]
+        () =>
+            clientTeamNumber !== undefined &&
+            game.players[clientTeamNumber].length !== 1,
+        [clientTeamNumber, game.players]
     );
 
     const joinTeam = useCallback(
         (teamNumber: number) => {
             sendMessage(
-                CompetitiveSocketEndpoint.SWITCH_TEAM,
-                JSON.stringify({
-                    player: { playerId: clientId },
-                    teamNumber: teamNumber
-                }),
+                PlayerSocketEndpoint.SWITCH_TEAM,
+                teamNumber,
                 game.gameId
             );
         },
-        [clientId, game.gameId, sendMessage]
+        [game.gameId, sendMessage]
     );
 
     const createTeam = useCallback(() => {
-        sendMessage(
-            CompetitiveSocketEndpoint.NEW_TEAM,
-            JSON.stringify({ playerId: clientId }),
-            game.gameId
-        );
-    }, [clientId, game.gameId, sendMessage]);
+        sendMessage(PlayerSocketEndpoint.NEW_TEAM, undefined, game.gameId);
+    }, [game.gameId, sendMessage]);
 
     return (
         <div>
-            <h2>Party {game ? game.playerIds.length : 0}</h2>
-            {game.playerIds.map((team: string[], teamNumber: number) => (
+            <h2>Party {game ? game.players.length : 0}</h2>
+            {game.players.map((team: PlayerInfo[], teamNumber: number) => (
                 <div>
                     <h2>Team {teamNumber + 1}</h2>
                     {teamNumber !== clientTeamNumber && (
@@ -63,9 +52,9 @@ export const CompetitiveParty = memo(function CompetitivePartyFn({
                             Join Team
                         </button>
                     )}
-                    {team.map((elem: string, index: number) => (
+                    {team.map((elem: PlayerInfo, index: number) => (
                         <UserEntry
-                            name={elem}
+                            info={elem}
                             icon={<UserInfo />}
                             key={index}
                         />

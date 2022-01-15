@@ -1,8 +1,5 @@
 import { memo, useCallback } from 'react';
-import {
-    SendMessageFn,
-    CollaborativeSocketEndpoint
-} from '../shared/types/socketTypes';
+import { GameSocketEndpoint, SendMessageFn } from '../shared/types/socketTypes';
 import { GameStatus } from '../shared/types/backendTypes';
 
 interface PausedProps {
@@ -14,12 +11,7 @@ interface PausedProps {
 export const Paused = memo(function PausedFn(props: PausedProps) {
     const { gameId, status, sendMessage } = props;
     const unpause = useCallback(
-        () =>
-            sendMessage(
-                CollaborativeSocketEndpoint.UNPAUSE_GAME,
-                undefined,
-                gameId
-            ),
+        () => sendMessage(GameSocketEndpoint.UNPAUSE_GAME, undefined, gameId),
         [gameId, sendMessage]
     );
 
