@@ -1,10 +1,14 @@
 package com.java.backend.CrossWorks.service;
 
+import com.java.backend.CrossWorks.collaborative.Game;
 import com.java.backend.CrossWorks.collaborative.Player;
 import com.java.backend.CrossWorks.exceptions.InvalidParamException;
 import com.java.backend.CrossWorks.storage.PlayerStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -16,6 +20,12 @@ import java.util.function.Consumer;
 public class PlayerService {
     @Autowired
     private PlayerStorage playerRepo;
+
+    @Autowired
+    private GameService gameService;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     public Vector<Player> getAllGames() {
         Vector<Player> players = new Vector();
@@ -36,7 +46,6 @@ public class PlayerService {
             Player currentPlayer = val.get();
             action.accept(currentPlayer);
             playerRepo.save(currentPlayer);
-            System.out.println("saved player in repo");
             return currentPlayer;
         }
         throw new InvalidParamException(errorMsg);
@@ -62,6 +71,28 @@ public class PlayerService {
         Player newPlayer = new Player(playerId);
         playerRepo.save(newPlayer);
         return newPlayer;
+    }
+
+    public void removePlayer(String playerId) throws InvalidParamException {
+        // TODO: also remove the player from their game;
+        Optional<Player> val = playerRepo.findById(playerId);
+        if (val.isPresent()) {
+            Player currentPlayer = val.get();
+            if (currentPlayer.getCurrentGameId() != null) {
+                Game gameLeft =
+                        gameService.leaveGame(currentPlayer.getCurrentGameId(), currentPlayer);
+                if (gameLeft != null) {
+                    HttpHeaders responseHeaders = new HttpHeaders();
+                    responseHeaders.set("type", "updateGame");
+                    simpMessagingTemplate.convertAndSend(
+                            "queue/game/" + gameLeft.getGameId(),
+                            ResponseEntity.ok().headers(responseHeaders).body(gameLeft));
+                }
+            }
+            playerRepo.deleteById(playerId);
+            return;
+        }
+        throw new InvalidParamException("Player ID doesn't exist in removePlayer");
     }
 
     public Player joinGame(String playerId, String gameId) throws InvalidParamException {

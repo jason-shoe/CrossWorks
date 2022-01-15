@@ -1,4 +1,5 @@
 export const BACKEND_URL = 'http://localhost:8080/';
+export const CLIENT_NAME_KEY = 'crossworksClientName';
 export interface HttpResponse<T> {
     body: T;
     headers: {

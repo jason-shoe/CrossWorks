@@ -1,5 +1,6 @@
 import { ChangeEvent, memo, useCallback, useState } from 'react';
 import { PageState } from '../shared/types/pageState';
+import { ClientNameProps } from '../shared/types/propTypes';
 import {
     SendMessageFn,
     SocketSubscription,
@@ -9,9 +10,7 @@ import { UsernameInput } from './UsernameInput';
 
 interface JoinGameInputProps {
     setPageState: (state: PageState) => void;
-    clientId: string;
-    clientName: string;
-    setClientName: (clientName: string) => void;
+    clientNameProps: ClientNameProps;
     addSubscription: (subscription: string) => void;
     sendMessage: SendMessageFn;
     hasFailed: boolean;
@@ -23,9 +22,7 @@ export const JoinGameInput = memo(function JoinGameInputFn(
     const [gameId, setGameId] = useState('');
     const {
         setPageState,
-        clientId,
-        clientName,
-        setClientName,
+        clientNameProps,
         addSubscription,
         sendMessage,
         hasFailed
@@ -39,14 +36,19 @@ export const JoinGameInput = memo(function JoinGameInputFn(
     );
 
     const joinGame = useCallback(() => {
-        if (gameId.includes('game')) {
+        if (clientNameProps.clientName.length === 0) {
+            clientNameProps.setGaveWarning(true);
+        } else if (gameId.includes('game')) {
             addSubscription(SocketSubscription.GAME_PREFIX + gameId);
-            sendMessage(PlayerSocketEndpoint.SET_PLAYER_NAME, clientName);
-            sendMessage(PlayerSocketEndpoint.CONNECT, clientName, gameId);
+            sendMessage(
+                PlayerSocketEndpoint.CONNECT,
+                clientNameProps.clientName,
+                gameId
+            );
         } else {
             setPageState(PageState.BAD_JOIN_GAME);
         }
-    }, [gameId, addSubscription, sendMessage, clientName, setPageState]);
+    }, [clientNameProps, gameId, addSubscription, sendMessage, setPageState]);
 
     return (
         <div className={`max-w-2xl m-auto mt-20 space-y-8`}>
@@ -57,8 +59,9 @@ export const JoinGameInput = memo(function JoinGameInputFn(
                 </p>
                 <p>Description</p>
                 <UsernameInput
-                    clientName={clientName}
-                    setClientName={setClientName}
+                    clientName={clientNameProps.clientName}
+                    setClientName={clientNameProps.setClientName}
+                    showWarning={clientNameProps.gaveWarning}
                 />
             </div>
             <div className={`flex justify-between space-x-6`}>

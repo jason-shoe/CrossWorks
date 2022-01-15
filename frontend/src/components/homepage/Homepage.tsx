@@ -1,17 +1,16 @@
 import { memo, useCallback } from 'react';
 import { PageState } from '../shared/types/pageState';
+import { ClientNameProps } from '../shared/types/propTypes';
 import { UsernameInput } from './UsernameInput';
 
 interface HomepageProps {
     setPageState: (state: PageState) => void;
-    clientName: string;
-    setClientName: (clientName: string) => void;
+    clientNameProps: ClientNameProps;
 }
 
 export const Homepage = memo(function Homepage({
     setPageState,
-    clientName,
-    setClientName
+    clientNameProps
 }: HomepageProps) {
     const navigateToCreateGame = useCallback(
         () => setPageState(PageState.CREATE_GAME),
@@ -35,8 +34,9 @@ export const Homepage = memo(function Homepage({
                     started:
                 </p>
                 <UsernameInput
-                    clientName={clientName}
-                    setClientName={setClientName}
+                    clientName={clientNameProps.clientName}
+                    setClientName={clientNameProps.setClientName}
+                    showWarning={clientNameProps.gaveWarning}
                 />
             </div>
             <div className={`flex justify-between space-x-6`}>

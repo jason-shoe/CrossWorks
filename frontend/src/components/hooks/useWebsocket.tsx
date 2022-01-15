@@ -8,12 +8,14 @@ import {
     PlayerInfo
 } from '../shared/types/backendTypes';
 import {
+    CLIENT_NAME_KEY,
     HttpPlayerId,
     HttpResponse,
     isHttpPlayerId,
     MessageType
 } from '../shared/types/httpTypes';
 import { PageState } from '../shared/types/pageState';
+import { ClientNameProps } from '../shared/types/propTypes';
 import {
     createTeamSubscription,
     GameSocketEndpoint,
@@ -40,7 +42,10 @@ export function useWebsocket(props: useWebsocketProps) {
     } = props;
     const [clientRef, setClientRef] = useState<any | undefined>(undefined);
     const [clientId, setClientId] = useState<string | undefined>();
-    const [clientName, setClientName] = useState<string>('');
+    const [clientName, setClientNameState] = useState<string>(
+        localStorage.getItem(CLIENT_NAME_KEY) || ''
+    );
+    const [gaveWarning, setGaveWarning] = useState(false);
 
     type HttpMessageType = HttpResponse<
         HttpPlayerId | CollaborativeGame | CompetitiveGame | Grid[]
@@ -54,6 +59,11 @@ export function useWebsocket(props: useWebsocketProps) {
                 : undefined,
         [clientId, game]
     );
+
+    const setClientName = useCallback((name: string) => {
+        localStorage.setItem(CLIENT_NAME_KEY, name);
+        setClientNameState(name);
+    }, []);
 
     const sendMessage = useCallback(
         (
@@ -133,10 +143,16 @@ export function useWebsocket(props: useWebsocketProps) {
         ]
     );
 
-    return {
-        clientId,
+    const clientNameProps: ClientNameProps = {
         clientName,
         setClientName,
+        gaveWarning,
+        setGaveWarning
+    };
+
+    return {
+        clientId,
+        clientNameProps,
         clientTeamNumber,
         setClientRef,
         sendMessage,

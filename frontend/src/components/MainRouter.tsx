@@ -33,8 +33,7 @@ const MainRouter = memo(function MainRouterFn() {
 
     const {
         clientId,
-        clientName,
-        setClientName,
+        clientNameProps,
         clientTeamNumber,
         setClientRef,
         sendMessage,
@@ -67,16 +66,14 @@ const MainRouter = memo(function MainRouterFn() {
                 return (
                     <Homepage
                         setPageState={setPageState}
-                        clientName={clientName}
-                        setClientName={setClientName}
+                        clientNameProps={clientNameProps}
                     />
                 );
             case PageState.CREATE_GAME:
                 return (
                     <GameModeSelection
                         setPageState={setPageState}
-                        clientName={clientName}
-                        setClientName={setClientName}
+                        clientNameProps={clientNameProps}
                     />
                 );
             case PageState.JOIN_GAME:
@@ -84,9 +81,7 @@ const MainRouter = memo(function MainRouterFn() {
                 return clientId ? (
                     <JoinGameInput
                         setPageState={setPageState}
-                        clientId={clientId}
-                        clientName={clientName}
-                        setClientName={setClientName}
+                        clientNameProps={clientNameProps}
                         addSubscription={addSubscription}
                         sendMessage={sendMessage}
                         hasFailed={pageState === PageState.BAD_JOIN_GAME}
@@ -104,7 +99,7 @@ const MainRouter = memo(function MainRouterFn() {
                         subscriptions={subscriptions}
                         clientId={clientId}
                         clientTeamNumber={clientTeamNumber}
-                        clientName={clientName}
+                        clientName={clientNameProps.clientName}
                         game={game}
                     />
                 ) : undefined;
@@ -138,16 +133,15 @@ const MainRouter = memo(function MainRouterFn() {
     }, [
         pageState,
         setPageState,
-        clientName,
-        setClientName,
+        clientNameProps,
         clientId,
         addSubscription,
         sendMessage,
         removeSubscription,
         subscriptions,
+        clientTeamNumber,
         game,
         competitiveTeamsAnswers,
-        clientTeamNumber,
         leaveGame
     ]);
 
