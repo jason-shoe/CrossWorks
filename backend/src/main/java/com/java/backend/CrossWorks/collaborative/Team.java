@@ -29,8 +29,8 @@ public class Team implements Serializable {
         return team.size();
     }
 
-    public void remove(Player player) {
-        team.remove(player);
+    public boolean remove(Player player) {
+        return team.remove(player);
     }
 
     public boolean contains(Player player) {

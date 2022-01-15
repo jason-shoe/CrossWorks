@@ -22,6 +22,7 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
         ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
         HttpSession session = servletRequest.getServletRequest().getSession();
         String playerId = Datatype.PLAYER.prefix + session.getId();
+        System.out.println("Created a player: " + playerId);
         attributes.put("playerId", playerId);
         return new StompPrincipal(playerId);
     }

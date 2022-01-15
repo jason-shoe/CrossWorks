@@ -1,25 +1,26 @@
 import React, { memo, useCallback, useState } from 'react';
 import { PageState } from '../shared/types/pageState';
+import { ClientNameProps } from '../shared/types/propTypes';
 import { UsernameInput } from './UsernameInput';
 
 interface GameModeSelectionProps {
     setPageState: (state: PageState) => void;
-    clientName: string;
-    setClientName: (clientName: string) => void;
+    clientNameProps: ClientNameProps;
 }
 
 export const GameModeSelection = memo(function GameModeSelection({
     setPageState,
-    clientName,
-    setClientName
+    clientNameProps
 }: GameModeSelectionProps) {
     const [mode, setMode] = useState<PageState>();
 
     const createGame = useCallback(() => {
-        if (mode !== undefined) {
+        if (clientNameProps.clientName.length === 0) {
+            clientNameProps.setGaveWarning(true);
+        } else if (mode !== undefined) {
             setPageState(mode);
         }
-    }, [mode, setPageState]);
+    }, [clientNameProps, mode, setPageState]);
 
     const handleSetCollab = useCallback(() => {
         setMode(PageState.COLLABORATIVE_SETTINGS);
@@ -41,8 +42,9 @@ export const GameModeSelection = memo(function GameModeSelection({
                 </p>
                 <p>Description</p>
                 <UsernameInput
-                    clientName={clientName}
-                    setClientName={setClientName}
+                    clientName={clientNameProps.clientName}
+                    setClientName={clientNameProps.setClientName}
+                    showWarning={clientNameProps.gaveWarning}
                 />
             </div>
             <div className={`flex justify-between space-x-6`}>

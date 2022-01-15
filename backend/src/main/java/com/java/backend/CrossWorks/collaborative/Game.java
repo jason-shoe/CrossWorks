@@ -20,10 +20,12 @@ public abstract class Game {
 
     public Game() {
         this(Datatype.GAME.prefix + UUID.randomUUID());
+        this.reset();
     }
 
     public Game(String gameId) {
         this.gameId = gameId;
+        this.reset();
         status = GameStatus.SETTINGS;
     }
 
@@ -78,6 +80,7 @@ public abstract class Game {
     }
 
     public void returnToSettings() {
+        this.reset();
         status = GameStatus.SETTINGS;
     }
 
@@ -95,14 +98,16 @@ public abstract class Game {
 
     public abstract boolean hasPlayers();
 
-    public abstract void addPlayer(Player player);
+    public abstract boolean addPlayer(Player player);
 
-    public abstract void removePlayer(Player player);
+    public abstract boolean removePlayer(Player player);
 
     public abstract boolean hasPlayer(Player player);
 
     public abstract void makeMove(Player player, int x, int y, char val) throws InvalidMove;
 
     public abstract void sendTeamAnswers(SimpMessagingTemplate simpMessagingTemplate);
+
+    public abstract void reset();
 
 }

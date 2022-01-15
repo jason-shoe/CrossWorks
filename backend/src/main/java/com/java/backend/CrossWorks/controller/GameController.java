@@ -98,26 +98,12 @@ public class GameController {
                 ResponseEntity.ok().headers(responseHeaders).body(playerId));
     }
 
-    @MessageMapping("/set-player-name")
-    public void setPlayerName(@RequestBody String playerName,
-                              SimpMessageHeaderAccessor headerAccessor)
-            throws InvalidParamException {
-        log.info("Set Player Name: {}");
-        String playerId = getPlayerIdFromHeader(headerAccessor);
-        playerService.renamePlayer(playerId, playerName);
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add("type", "setPlayerName");
-        simpMessagingTemplate.convertAndSendToUser(playerId, "/queue/messages",
-                ResponseEntity.ok().headers(responseHeaders).body(playerId));
-    }
-
     @MessageMapping("/create")
     public void create(@RequestBody CreateGameRequest request,
                        SimpMessageHeaderAccessor headerAccessor) throws InvalidParamException {
         log.info("Creating collaborative game");
         String playerId = getPlayerIdFromHeader(headerAccessor);
         Player player = playerService.renamePlayer(playerId, request.playerName);
-        log.info("this is the players name: {}", player.getPlayerName());
         Game currentGame = gameService.removeAndCreate(player, request.isCollaborative);
         playerService.joinGame(playerId, currentGame.getGameId());
 
@@ -141,17 +127,20 @@ public class GameController {
         HttpHeaders responseHeaders = new HttpHeaders();
         try {
             Game currentGame = gameService.connectToGame(player, gameId);
-            playerService.joinGame(playerId, currentGame.getGameId());
-            responseHeaders.set("type", "updateGame");
-            return ResponseEntity.ok().headers(responseHeaders).body(currentGame);
+            if (currentGame.hasPlayer(player)) {
+                playerService.joinGame(playerId, currentGame.getGameId());
+                responseHeaders.set("type", "updateGame");
+                return ResponseEntity.ok().headers(responseHeaders).body(currentGame);
+            }
+            responseHeaders.set("type", "gameInProgress");
         } catch (Exception e) {
             responseHeaders.set("type", "badGameId");
-            ResponseEntity<CollaborativeGame> body =
-                    ResponseEntity.badRequest().headers(responseHeaders).body(null);
-            simpMessagingTemplate.convertAndSendToUser(player.getPlayerId(), "/queue/messages",
-                    body);
-            throw new InvalidParamException("Game ID doesn't exist in setCrossword - Controller");
         }
+        ResponseEntity<CollaborativeGame> body =
+                ResponseEntity.badRequest().headers(responseHeaders).body(null);
+        simpMessagingTemplate.convertAndSendToUser(player.getPlayerId(), "/queue/messages",
+                body);
+        throw new InvalidParamException("Game ID doesn't exist in connect or game is in progress");
     }
 
     @MessageMapping("set-game-crossword/{gameId}")

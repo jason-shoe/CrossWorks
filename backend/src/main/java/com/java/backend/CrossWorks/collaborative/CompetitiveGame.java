@@ -2,10 +2,7 @@ package com.java.backend.CrossWorks.collaborative;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.java.backend.CrossWorks.exceptions.InvalidMove;
-import com.java.backend.CrossWorks.models.Crossword;
-import com.java.backend.CrossWorks.models.Datatype;
-import com.java.backend.CrossWorks.models.Grid;
-import com.java.backend.CrossWorks.models.GridCell;
+import com.java.backend.CrossWorks.models.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -48,32 +45,31 @@ public class CompetitiveGame extends Game {
         this.numCells = numCells;
     }
 
-    public void addPlayer(Player player) {
-        System.out.println("trying to add a player");
-        if (this.hasPlayer(player)) {
-            return;
+    public boolean addPlayer(Player player) {
+        if (this.getStatus() == GameStatus.SETTINGS) {
+            if (!this.hasPlayer(player)) {
+                Team newTeam = new Team();
+                newTeam.add(player);
+                players.addElement(newTeam);
+            }
+            return true;
         }
-
-
-        System.out.println("1");
-        Team newTeam = new Team();
-        System.out.println("2");
-        newTeam.add(player);
-        System.out.println("3");
-        players.addElement(newTeam);
-        System.out.println("4");
+        return false;
     }
 
-    public void removePlayer(Player player) {
+    public boolean removePlayer(Player player) {
         for (int i = 0; i < players.size(); i++) {
             if (players.get(i).contains(player)) {
-                players.get(i).remove(player);
-                if (players.get(i).size() == 0) {
+                boolean removedPlayer = players.get(i).remove(player);
+                if (removedPlayer && players.get(i).size() == 0 &&
+                        this.getStatus() == GameStatus.SETTINGS) {
                     players.remove(i);
                 }
-                return;
+                return removedPlayer;
             }
         }
+
+        return false;
     }
 
 
@@ -222,6 +218,11 @@ public class CompetitiveGame extends Game {
         }
         return;
 
+    }
+
+    public void reset() {
+        answers = null;
+        maskedAnswers = null;
     }
 
 }

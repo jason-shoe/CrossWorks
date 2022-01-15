@@ -40,10 +40,12 @@ public class CollaborativeGame extends Game {
         this.answers = new TeamAnswers(answersGrid, numCells);
     }
 
-    public void addPlayer(Player player) {
+    public boolean addPlayer(Player player) {
         if (!players.contains(player)) {
             players.addElement(player);
         }
+
+        return true;
     }
 
     public boolean hasPlayer(Player player) {
@@ -61,8 +63,8 @@ public class CollaborativeGame extends Game {
         return false;
     }
 
-    public void removePlayer(Player player) {
-        players.remove(player);
+    public boolean removePlayer(Player player) {
+        return players.remove(player);
     }
 
     public void startGame() {
@@ -107,6 +109,10 @@ public class CollaborativeGame extends Game {
 
     public void sendTeamAnswers(SimpMessagingTemplate simpMessagingTemplate) {
         return;
+    }
+
+    public void reset() {
+        answers = null;
     }
 
 }

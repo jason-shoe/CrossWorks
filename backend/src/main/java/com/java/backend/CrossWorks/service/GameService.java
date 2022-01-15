@@ -166,14 +166,20 @@ public class GameService {
 
 
     public Game leaveGame(String gameId, Player player) throws InvalidParamException {
-        Consumer<Game> action = (game) -> {
-            game.removePlayer(player);
-            if (!game.hasPlayers()) {
+        Optional<Game> val = repo.findById(gameId);
+        if (val.isPresent()) {
+            Game currentGame = val.get();
+            currentGame.removePlayer(player);
+            repo.save(currentGame);
+            if (!currentGame.hasPlayers()) {
                 System.out.println("deleting this game " + gameId);
-                repo.delete(game);
+                repo.deleteById(gameId);
+                return null;
             }
-        };
-        return performAction(action, gameId, "Game ID doesn't exist in leaveGame");
+            return currentGame;
+        }
+        throw new InvalidParamException("Game ID doesn't exist in leaveGame");
+
     }
 
 

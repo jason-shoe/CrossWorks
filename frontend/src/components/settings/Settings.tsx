@@ -61,7 +61,6 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
 
     useEffect(() => {
         if (clientId && game === undefined) {
-            sendMessage(PlayerSocketEndpoint.SET_PLAYER_NAME, clientName);
             sendMessage(
                 PlayerSocketEndpoint.CREATE_GAME,
                 JSON.stringify({
