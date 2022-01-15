@@ -3,10 +3,7 @@ import {
     CollaborativeGame,
     CompetitiveGame
 } from '../shared/types/backendTypes';
-import {
-    CollaborativeSocketEndpoint,
-    SendMessageFn
-} from '../shared/types/socketTypes';
+import { GameSocketEndpoint, SendMessageFn } from '../shared/types/socketTypes';
 
 interface HeaderProps {
     game: CollaborativeGame | CompetitiveGame;
@@ -16,29 +13,19 @@ interface HeaderProps {
 export const Header = memo(function HeaderFn(props: HeaderProps) {
     const { game, sendMessage, leaveGame } = props;
     const pause = useCallback(
-        () =>
-            sendMessage(
-                CollaborativeSocketEndpoint.PAUSE,
-                undefined,
-                game.gameId
-            ),
+        () => sendMessage(GameSocketEndpoint.PAUSE, undefined, game.gameId),
         [game.gameId, sendMessage]
     );
 
     const giveUp = useCallback(
-        () =>
-            sendMessage(
-                CollaborativeSocketEndpoint.GIVE_UP,
-                undefined,
-                game.gameId
-            ),
+        () => sendMessage(GameSocketEndpoint.GIVE_UP, undefined, game.gameId),
         [game.gameId, sendMessage]
     );
 
     const returnToSettings = useCallback(
         () =>
             sendMessage(
-                CollaborativeSocketEndpoint.RETURN_TO_SETTINGS,
+                GameSocketEndpoint.RETURN_TO_SETTINGS,
                 undefined,
                 game.gameId
             ),

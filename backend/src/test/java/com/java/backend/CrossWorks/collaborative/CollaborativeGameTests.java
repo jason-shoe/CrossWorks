@@ -1,14 +1,15 @@
 package com.java.backend.CrossWorks.collaborative;
 
-import java.util.Vector;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Vector;
 
 @SpringBootTest
 class CollaborativeGameTests {
 
     @Test
-    void correctPlayerIds() {
+    void correctPlayers() {
         CollaborativeGame game = new CollaborativeGame();
         Player playerOne = new Player("sessionTwo");
         Player playerTwo = new Player("sessionOne");
@@ -16,8 +17,8 @@ class CollaborativeGameTests {
         game.addPlayer(playerOne);
         game.addPlayer(playerTwo);
 
-        Vector<String> playerIds = game.getPlayerIds();
-        assert(playerOne.getPlayerId().equals(playerIds.get(0)));
-        assert(playerTwo.getPlayerId().equals(playerIds.get(1)));
+        Vector<Player> players = game.getPlayers();
+        assert (playerOne.getPlayerId().equals(players.get(0).getPlayerId()));
+        assert (playerTwo.getPlayerId().equals(players.get(1).getPlayerId()));
     }
 }

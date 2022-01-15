@@ -6,6 +6,9 @@ import com.java.backend.CrossWorks.models.Crossword;
 import com.java.backend.CrossWorks.models.Datatype;
 import com.java.backend.CrossWorks.models.Grid;
 import com.java.backend.CrossWorks.models.GridCell;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -15,7 +18,7 @@ import java.util.Vector;
 @Table(name = "COMPETITIVEGAME")
 public class CompetitiveGame extends Game {
     @Column(columnDefinition = "LONGTEXT")
-    private Vector<Team> players;
+    private final Vector<Team> players;
     @Column(columnDefinition = "LONGTEXT")
     private Vector<TeamAnswers> answers;
     @Column(columnDefinition = "LONGTEXT")
@@ -33,13 +36,6 @@ public class CompetitiveGame extends Game {
     public CompetitiveGame(Crossword crossword) {
         this();
         setCrossword(crossword);
-    }
-
-    public void detach() {
-        super.detach();
-        answers = null;
-        maskedAnswers = null;
-        players = null;
     }
 
     public void setCrossword(Crossword crossword) {
@@ -83,6 +79,8 @@ public class CompetitiveGame extends Game {
 
     public int getTeamNumber(Player player) {
         for (int i = 0; i < players.size(); i++) {
+            System.out.println(
+                    "this is team" + i + " " + players.get(i).getPlayers().get(0).getPlayerId());
             if (players.get(i).contains(player)) {
                 return i;
             }
@@ -123,13 +121,21 @@ public class CompetitiveGame extends Game {
     }
 
     public void switchTeam(Player player, int teamNumber) {
+        System.out.println("In switch team");
         int oldTeamNumber = getTeamNumber(player);
         if (oldTeamNumber == -1) {
+            System.out.println("Couldn't find old team number");
             return;
         }
 
+        System.out.println("Old Team Number: " + oldTeamNumber);
         players.get(oldTeamNumber).remove(player);
         players.get(teamNumber).add(player);
+        System.out.println("sizes");
+        for (Team a : players) {
+            System.out.println(a.team.size());
+        }
+        System.out.println("done");
         if (players.get(oldTeamNumber).size() == 0) {
             players.remove(oldTeamNumber);
         }
@@ -159,18 +165,15 @@ public class CompetitiveGame extends Game {
         return players.size() != 0;
     }
 
-    public Vector<Vector<String>> getPlayerIds() {
+    public Vector<Vector<Player>> getPlayers() {
         if (players == null) {
             return new Vector<>();
         }
-        Vector<Vector<String>> player_ids = new Vector<Vector<String>>();
-        for (int i = 0; i < players.size(); i++) {
-            player_ids.add(new Vector<String>());
-            for (Player currPlayer : players.get(i).getPlayers()) {
-                player_ids.get(i).add(currPlayer.getPlayerId());
-            }
+        Vector<Vector<Player>> playersObj = new Vector<Vector<Player>>();
+        for (Team team : players) {
+            playersObj.add(team.getPlayers());
         }
-        return player_ids;
+        return playersObj;
     }
 
     public void makeMove(Player player, int x, int y, char val) throws InvalidMove {
@@ -195,6 +198,30 @@ public class CompetitiveGame extends Game {
                 this.markIncorrect();
             }
         }
+    }
+
+    public void sendTeamAnswers(SimpMessagingTemplate simpMessagingTemplate) {
+        int numTeams = this.getNumTeams();
+        Grid[] unmaskedAnswers = this.getTeamAnswers();
+        Grid[] maskedAnswers = this.getMaskedTeamAnswers();
+
+        Grid[] temp = maskedAnswers.clone();
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.set("type", "competitiveAnswersUpdate");
+
+        for (int i = 0; i < numTeams; i++) {
+            temp[i] = unmaskedAnswers[i];
+            System.out.println("sending to team: " +
+                    "/queue/game/" + this.getGameId() + "/" + i + "-team");
+
+            simpMessagingTemplate.convertAndSend(
+                    "queue/game/" + this.getGameId() + "/" + i + "-team",
+                    ResponseEntity.ok().headers(responseHeaders).body(temp));
+            temp[i] = maskedAnswers[i];
+        }
+        return;
+
     }
 
 }

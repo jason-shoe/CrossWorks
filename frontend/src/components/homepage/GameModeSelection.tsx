@@ -1,12 +1,17 @@
 import React, { memo, useCallback, useState } from 'react';
 import { PageState } from '../shared/types/pageState';
+import { UsernameInput } from './UsernameInput';
 
 interface GameModeSelectionProps {
     setPageState: (state: PageState) => void;
+    clientName: string;
+    setClientName: (clientName: string) => void;
 }
 
 export const GameModeSelection = memo(function GameModeSelection({
-    setPageState
+    setPageState,
+    clientName,
+    setClientName
 }: GameModeSelectionProps) {
     const [mode, setMode] = useState<PageState>();
 
@@ -35,6 +40,10 @@ export const GameModeSelection = memo(function GameModeSelection({
                     Choose your game mode
                 </p>
                 <p>Description</p>
+                <UsernameInput
+                    clientName={clientName}
+                    setClientName={setClientName}
+                />
             </div>
             <div className={`flex justify-between space-x-6`}>
                 <button className={cardButtonStyles} onClick={handleSetCollab}>

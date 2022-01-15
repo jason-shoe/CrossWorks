@@ -1,12 +1,17 @@
 import { memo, useCallback } from 'react';
 import { PageState } from '../shared/types/pageState';
+import { UsernameInput } from './UsernameInput';
 
 interface HomepageProps {
     setPageState: (state: PageState) => void;
+    clientName: string;
+    setClientName: (clientName: string) => void;
 }
 
 export const Homepage = memo(function Homepage({
-    setPageState
+    setPageState,
+    clientName,
+    setClientName
 }: HomepageProps) {
     const navigateToCreateGame = useCallback(
         () => setPageState(PageState.CREATE_GAME),
@@ -29,6 +34,10 @@ export const Homepage = memo(function Homepage({
                     Welcome to crosswords for teams! Select an option to get
                     started:
                 </p>
+                <UsernameInput
+                    clientName={clientName}
+                    setClientName={setClientName}
+                />
             </div>
             <div className={`flex justify-between space-x-6`}>
                 <button className={buttonStyles} onClick={navigateToCreateGame}>

@@ -9,10 +9,10 @@ import { InputNumber } from 'rsuite';
 import styles from './Settings.module.scss';
 import {
     SendMessageFn,
-    CollaborativeSocketEndpoint,
-    CompetitiveSocketEndpoint,
     isActiveTeamSubscription,
-    isTeamSubscription
+    isTeamSubscription,
+    GameSocketEndpoint,
+    PlayerSocketEndpoint
 } from '../shared/types/socketTypes';
 import { CollaborativeParty } from './CollaborativeParty';
 import { CompetitiveParty } from './CompetitiveParty';
@@ -21,9 +21,10 @@ interface SettingsProps {
     createCollaborative: boolean;
     sendMessage: SendMessageFn;
     removeSubscription: (subscription: string) => void;
-    clientTeamNumber: number | undefined;
     subscriptions: string[];
     clientId: string;
+    clientName: string;
+    clientTeamNumber: number | undefined;
     game?: CollaborativeGame | CompetitiveGame;
 }
 
@@ -33,54 +34,43 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
         game,
         sendMessage,
         clientId,
+        clientName,
+        clientTeamNumber,
         removeSubscription,
-        subscriptions,
-        clientTeamNumber
+        subscriptions
     } = props;
 
     const setCrosswordId = useCallback(
         (crosswordId: string) => {
             if (game !== undefined) {
                 sendMessage(
-                    createCollaborative
-                        ? CollaborativeSocketEndpoint.SET_CROSSWORD
-                        : CompetitiveSocketEndpoint.SET_CROSSWORD,
+                    GameSocketEndpoint.SET_CROSSWORD,
                     crosswordId,
                     game.gameId
                 );
             }
         },
-        [createCollaborative, game, sendMessage]
+        [game, sendMessage]
     );
 
     const startGame = useCallback(() => {
         if (game !== undefined) {
-            if (clientTeamNumber !== undefined && !createCollaborative) {
-                sendMessage(
-                    CompetitiveSocketEndpoint.START_GAME,
-                    undefined,
-                    game.gameId
-                );
-            } else if (createCollaborative) {
-                sendMessage(
-                    CollaborativeSocketEndpoint.START_GAME,
-                    undefined,
-                    game.gameId
-                );
-            }
+            sendMessage(GameSocketEndpoint.START_GAME, undefined, game.gameId);
         }
-    }, [clientTeamNumber, createCollaborative, game, sendMessage]);
+    }, [game, sendMessage]);
 
     useEffect(() => {
         if (clientId && game === undefined) {
+            sendMessage(PlayerSocketEndpoint.SET_PLAYER_NAME, clientName);
             sendMessage(
-                createCollaborative
-                    ? CollaborativeSocketEndpoint.CREATE_GAME
-                    : CompetitiveSocketEndpoint.CREATE_GAME,
-                JSON.stringify({ playerId: clientId })
+                PlayerSocketEndpoint.CREATE_GAME,
+                JSON.stringify({
+                    playerName: clientName,
+                    isCollaborative: createCollaborative
+                })
             );
         }
-    }, [clientId, createCollaborative, game, sendMessage]);
+    }, [clientId, clientName, createCollaborative, game, sendMessage]);
 
     useEffect(() => {
         subscriptions.forEach((subscription) => {
@@ -127,6 +117,7 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
                             <CompetitiveParty
                                 game={game}
                                 clientId={clientId}
+                                clientTeamNumber={clientTeamNumber}
                                 sendMessage={sendMessage}
                             />
                         )}

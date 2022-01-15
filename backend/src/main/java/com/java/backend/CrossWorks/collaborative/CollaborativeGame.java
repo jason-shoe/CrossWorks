@@ -6,6 +6,7 @@ import com.java.backend.CrossWorks.models.Crossword;
 import com.java.backend.CrossWorks.models.Datatype;
 import com.java.backend.CrossWorks.models.Grid;
 import com.java.backend.CrossWorks.models.GridCell;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -15,7 +16,7 @@ import java.util.Vector;
 @Table(name = "COLLABORATIVEGAME")
 public class CollaborativeGame extends Game {
     @Column(columnDefinition = "LONGTEXT")
-    private Vector<Player> players;
+    private final Vector<Player> players;
     @ManyToOne(cascade = {CascadeType.ALL})
     private TeamAnswers answers;
 
@@ -27,12 +28,6 @@ public class CollaborativeGame extends Game {
     public CollaborativeGame(Crossword crossword) {
         this();
         setCrossword(crossword);
-    }
-
-    public void detach() {
-        super.detach();
-        answers = null;
-        players = null;
     }
 
     public void setCrossword(Crossword crossword) {
@@ -84,18 +79,14 @@ public class CollaborativeGame extends Game {
         return players.size() != 0;
     }
 
-    public Vector<String> getPlayerIds() {
+    public Vector<Player> getPlayers() {
         if (players == null) {
             return new Vector<>();
         }
-        Vector<String> player_ids = new Vector(players.size());
-        for (int x = 0; x < players.size(); x++) {
-            player_ids.add(x, players.get(x).getPlayerId());
-        }
-        return player_ids;
+        return players;
     }
 
-    public void makeMove(int x, int y, char val) throws InvalidMove {
+    public void makeMove(Player player, int x, int y, char val) throws InvalidMove {
         answers.makeMove(x, y, GridCell.charValueOf(val), this.getCell(x, y));
         if (answers.isComplete()) {
             if (answers.isCorrect()) {
@@ -112,6 +103,10 @@ public class CollaborativeGame extends Game {
         } else {
             return null;
         }
+    }
+
+    public void sendTeamAnswers(SimpMessagingTemplate simpMessagingTemplate) {
+        return;
     }
 
 }

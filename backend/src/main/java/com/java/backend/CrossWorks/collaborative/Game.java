@@ -1,13 +1,16 @@
 package com.java.backend.CrossWorks.collaborative;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.java.backend.CrossWorks.exceptions.InvalidMove;
 import com.java.backend.CrossWorks.models.*;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.persistence.*;
 import java.util.UUID;
 
-@MappedSuperclass
-public class Game {
+@Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public abstract class Game {
     @Id
     @Column(name = "GAMEID")
     private final String gameId;
@@ -44,9 +47,7 @@ public class Game {
         return crossword;
     }
 
-    public void detach() {
-        crossword = null;
-    }
+    public abstract void setCrossword(Crossword crossword);
 
     public GameStatus getStatus() {
         return status;
@@ -91,4 +92,17 @@ public class Game {
             return null;
         }
     }
+
+    public abstract boolean hasPlayers();
+
+    public abstract void addPlayer(Player player);
+
+    public abstract void removePlayer(Player player);
+
+    public abstract boolean hasPlayer(Player player);
+
+    public abstract void makeMove(Player player, int x, int y, char val) throws InvalidMove;
+
+    public abstract void sendTeamAnswers(SimpMessagingTemplate simpMessagingTemplate);
+
 }

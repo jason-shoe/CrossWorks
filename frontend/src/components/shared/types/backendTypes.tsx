@@ -19,13 +19,19 @@ export function isCollaborative(
     return isCollaborativeGameId(object.gameId);
 }
 
+export interface PlayerInfo {
+    playerId: string;
+    playerName: string;
+    currentGameId: string;
+}
+
 export interface CollaborativeGame extends Game {
-    playerIds: string[];
+    players: PlayerInfo[];
     teamAnswers: Grid;
 }
 
 export interface CompetitiveGame extends Game {
-    playerIds: string[][];
+    players: PlayerInfo[][];
     teamAnswers: Grid[];
 }
 
