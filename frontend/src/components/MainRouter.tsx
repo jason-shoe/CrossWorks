@@ -31,8 +31,8 @@ const MainRouter = memo(function MainRouterFn() {
         setGame,
         pageState,
         setPageState,
-        competitiveTeamsAnswers,
-        setCompetitiveTeamsAnswers
+        teamsAnswers,
+        setTeamsAnswers
     } = useGamePageSync();
 
     const {
@@ -45,7 +45,7 @@ const MainRouter = memo(function MainRouterFn() {
     } = useWebsocket({
         game,
         setGame,
-        setCompetitiveTeamsAnswers,
+        setTeamsAnswers,
         pageState,
         setPageState,
         addSubscription,
@@ -54,6 +54,7 @@ const MainRouter = memo(function MainRouterFn() {
 
     const leaveGame = useCallback(() => {
         if (game) {
+            clearChatMessages();
             removeSubscription(SocketSubscription.GAME_PREFIX + game.gameId);
             sendMessage(
                 PlayerSocketEndpoint.LEAVE_GAME,
@@ -63,7 +64,14 @@ const MainRouter = memo(function MainRouterFn() {
             setPageState(PageState.MAIN);
             setGame(undefined);
         }
-    }, [game, removeSubscription, sendMessage, setGame, setPageState]);
+    }, [
+        clearChatMessages,
+        game,
+        removeSubscription,
+        sendMessage,
+        setGame,
+        setPageState
+    ]);
 
     const component = useMemo(() => {
         switch (pageState) {
@@ -110,7 +118,7 @@ const MainRouter = memo(function MainRouterFn() {
                     />
                 ) : undefined;
             case PageState.COMPETITIVE:
-                return competitiveTeamsAnswers &&
+                return teamsAnswers &&
                     clientTeamNumber !== undefined &&
                     clientId &&
                     game &&
@@ -121,14 +129,18 @@ const MainRouter = memo(function MainRouterFn() {
                         chatMessages={chatMessages}
                         sendMessage={sendMessage}
                         leaveGame={leaveGame}
-                        teamsAnswers={competitiveTeamsAnswers}
+                        teamsAnswers={teamsAnswers}
                         clientTeamNumber={clientTeamNumber}
                     />
                 ) : undefined;
             case PageState.COLLABORATIVE:
-                return clientId && game && isCollaborative(game) ? (
+                return clientId &&
+                    game &&
+                    teamsAnswers &&
+                    isCollaborative(game) ? (
                     <Collaborative
                         game={game}
+                        teamAnswers={teamsAnswers[0]}
                         clientId={clientId}
                         chatMessages={chatMessages}
                         sendMessage={sendMessage}
@@ -150,7 +162,7 @@ const MainRouter = memo(function MainRouterFn() {
         clientTeamNumber,
         chatMessages,
         game,
-        competitiveTeamsAnswers,
+        teamsAnswers,
         leaveGame
     ]);
 

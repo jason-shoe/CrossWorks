@@ -28,7 +28,7 @@ import {
 interface useWebsocketProps {
     game: CollaborativeGame | CompetitiveGame | undefined;
     setGame: (game: CollaborativeGame | CompetitiveGame | undefined) => void;
-    setCompetitiveTeamsAnswers: (answers: Grid[] | undefined) => void;
+    setTeamsAnswers: (answers: Grid[] | undefined) => void;
     pageState: PageState;
     setPageState: (pageState: PageState) => void;
     addSubscription: (subscription: string) => void;
@@ -38,7 +38,7 @@ export function useWebsocket(props: useWebsocketProps) {
     const {
         game,
         setGame,
-        setCompetitiveTeamsAnswers,
+        setTeamsAnswers,
         pageState,
         setPageState,
         addSubscription,
@@ -104,7 +104,7 @@ export function useWebsocket(props: useWebsocketProps) {
                 }
             } else if (isGrids(msg.body)) {
                 if (messageType === MessageType.TEAMS_ANSWERS_UPDATE) {
-                    setCompetitiveTeamsAnswers(msg.body);
+                    setTeamsAnswers(msg.body);
                 }
             } else if (messageType === MessageType.CREATE_GAME) {
                 if (isCollaborative(msg.body)) {
@@ -123,6 +123,7 @@ export function useWebsocket(props: useWebsocketProps) {
             } else if (messageType === MessageType.BAD_GAME_ID) {
                 setPageState(PageState.BAD_JOIN_GAME);
             } else if (messageType === MessageType.START_GAME) {
+                setTeamsAnswers(undefined);
                 if (clientTeamNumber !== undefined) {
                     addSubscription(
                         createTeamSubscription(
@@ -130,12 +131,12 @@ export function useWebsocket(props: useWebsocketProps) {
                             clientTeamNumber
                         )
                     );
-                    sendMessage(
-                        GameSocketEndpoint.SEND_TEAM_ANSWERS,
-                        undefined,
-                        msg.body.gameId
-                    );
                 }
+                sendMessage(
+                    GameSocketEndpoint.SEND_TEAM_ANSWERS,
+                    undefined,
+                    msg.body.gameId
+                );
                 setGame(msg.body);
                 setPageState(PageState.COLLABORATIVE);
             }
@@ -146,9 +147,9 @@ export function useWebsocket(props: useWebsocketProps) {
             clientTeamNumber,
             pageState,
             sendMessage,
-            setCompetitiveTeamsAnswers,
             setGame,
-            setPageState
+            setPageState,
+            setTeamsAnswers
         ]
     );
 

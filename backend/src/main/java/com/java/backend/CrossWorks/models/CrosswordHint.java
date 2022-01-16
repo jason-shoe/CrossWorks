@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -13,28 +16,29 @@ import java.util.UUID;
 @Embeddable
 @Entity
 public class CrosswordHint implements Serializable {
-    @Id
-    private String crosswordHintId;
-
     public int hintNumber;
     public String hint;
+    @Column(name = "`ROW`")
     public int row;
+    @Column(name = "`COL`")
     public int col;
+    public Direction direction;
+    @Id
+    private String crosswordHintId;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String answer;
-    public Direction direction;
 
-    public CrosswordHint () {
+    public CrosswordHint() {
         this.crosswordHintId = Datatype.CROSSWORD_HINT + UUID.randomUUID().toString();
     }
 
-    public String getAnswer(){
+    public String getAnswer() {
         return answer;
     }
 
     @Override
     public String toString() {
-       return hint + " " + String.valueOf(row) + " " + String.valueOf(col) + " " + answer;
+        return hint + " " + row + " " + col + " " + answer;
     }
 
     public int getAnswerLength() {

@@ -36,18 +36,11 @@ public class CrossWorksApplication {
                 try {
                     Crossword data = mapper.readValue(inputStream, typeReference);
                     data.fillAnswers();
-                    data.getBoard().printBoard();
                     repository.save(data);
-                    log.info("crossword data saved");
+                    log.info("Crossword Saved: {}", data.getCrosswordId());
                 } catch (IOException e) {
-                    log.info("didn't work");
-                    log.info(e.toString());
+                    log.info("Crossword wasn't saved: {}", e.toString());
                 }
-            }
-
-            log.info("Crossword files found with findAll()");
-            for (Crossword file : repository.findAll()) {
-                log.info(file.getCrosswordId());
             }
         };
     }

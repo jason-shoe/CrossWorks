@@ -26,8 +26,12 @@ import java.util.function.Consumer;
 @Configurable
 public class GameService {
     private static final Logger log = LoggerFactory.getLogger(CrossWorksApplication.class);
+
     @Autowired
     private GameStorage repo;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     public Vector<Game> getAllGames() {
         Vector<Game> games = new Vector();
@@ -89,6 +93,12 @@ public class GameService {
 
     }
 
+    public Game getGame(String gameId) throws InvalidParamException {
+        Consumer<Game> action = (game) -> {
+        };
+        return performAction(action, gameId, "Game ID doesn't exist in getGame");
+    }
+
     public Game connectToGame(Player newPlayer, String gameId)
             throws InvalidParamException {
         Consumer<Game> action = (game) -> {
@@ -116,8 +126,6 @@ public class GameService {
     public Game switchTeam(Player newPlayer, int teamNumber, String gameId)
             throws InvalidParamException {
         Consumer<Game> action = (game) -> {
-            System.out.println("This is the game id: " + game.getGameId());
-            System.out.println("this is the data: " + teamNumber);
             ((CompetitiveGame) game).switchTeam(newPlayer, teamNumber);
         };
         return performAction(action, gameId, "Game ID doesn't exist in connectToGame");
@@ -172,7 +180,6 @@ public class GameService {
             currentGame.removePlayer(player);
             repo.save(currentGame);
             if (!currentGame.hasPlayers()) {
-                System.out.println("deleting this game " + gameId);
                 repo.deleteById(gameId);
                 return null;
             }
@@ -188,10 +195,11 @@ public class GameService {
         Optional<Game> val = repo.findById(gameId);
         if (val.isPresent()) {
             Game currentGame = val.get();
-            currentGame.makeMove(player, row, col, c);
+            boolean sendUpdate = currentGame.makeMove(player, row, col, c);
             repo.save(currentGame);
+            currentGame.sendTeamAnswers(simpMessagingTemplate);
 
-            return currentGame;
+            return sendUpdate ? currentGame : null;
         }
 
         throw new InvalidParamException("Game ID doesn't exist in setCrossword");

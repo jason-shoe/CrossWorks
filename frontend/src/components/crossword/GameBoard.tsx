@@ -6,6 +6,7 @@ import {
     Clue,
     CollaborativeGame,
     CompetitiveGame,
+    GameStatus,
     Grid
 } from '../shared/types/backendTypes';
 import {
@@ -19,7 +20,7 @@ interface GameBoardProps {
     game: CollaborativeGame | CompetitiveGame;
     teamAnswers: Grid;
     clientId: string;
-    sendMessage: SendMessageFn;
+    sendMessage: SendMessageFn | undefined;
     cellAnnotations: CellHintAnnotation[][];
 }
 
@@ -49,7 +50,11 @@ export const GameBoard = memo(function CollaborativeGameFn(
                     size={game.crossword.size}
                     inputCells={cellAnnotations}
                     answers={teamAnswers}
-                    sendMessage={sendMessage}
+                    sendMessage={
+                        game.status === GameStatus.STARTED
+                            ? sendMessage
+                            : undefined
+                    }
                     gameId={game.gameId}
                     clientId={clientId}
                     groundTruth={game.board}

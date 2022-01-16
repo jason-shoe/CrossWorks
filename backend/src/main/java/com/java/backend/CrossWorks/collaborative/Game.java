@@ -29,10 +29,6 @@ public abstract class Game {
         status = GameStatus.SETTINGS;
     }
 
-    public void changeCrossword(Crossword crossword) {
-        this.crossword = crossword;
-    }
-
     public String getGameId() {
         return gameId;
     }
@@ -49,7 +45,10 @@ public abstract class Game {
         return crossword;
     }
 
-    public abstract void setCrossword(Crossword crossword);
+    public void setCrossword(Crossword crossword) {
+        this.crossword = crossword;
+    }
+
 
     public GameStatus getStatus() {
         return status;
@@ -57,6 +56,7 @@ public abstract class Game {
 
     public void startGame() {
         status = GameStatus.STARTED;
+        this.setEmptyAnswers();
     }
 
     public void pauseGame() {
@@ -96,17 +96,20 @@ public abstract class Game {
         }
     }
 
-    public abstract boolean hasPlayers();
-
     public abstract boolean addPlayer(Player player);
 
     public abstract boolean removePlayer(Player player);
 
     public abstract boolean hasPlayer(Player player);
 
-    public abstract void makeMove(Player player, int x, int y, char val) throws InvalidMove;
+    public abstract boolean hasPlayers();
+
+    // returns whether or not a game update needs to be sent
+    public abstract boolean makeMove(Player player, int x, int y, char val) throws InvalidMove;
 
     public abstract void sendTeamAnswers(SimpMessagingTemplate simpMessagingTemplate);
+
+    public abstract void setEmptyAnswers();
 
     public abstract void reset();
 

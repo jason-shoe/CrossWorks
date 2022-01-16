@@ -33,4 +33,12 @@ public class HttpUtil {
                                                        String type, Message message) {
         return ResponseEntity.ok().headers(createResponseHeaders(type, message)).body(body);
     }
+
+    public static String getGameEndpoint(String gameId) {
+        return "queue/game/" + gameId;
+    }
+
+    public static String getTeamEndpoint(String gameId, int teamNumber) {
+        return "queue/game/" + gameId + "/" + teamNumber + "-team";
+    }
 }
