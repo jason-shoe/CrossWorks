@@ -17,10 +17,14 @@ import {
 import { useSubscriptions } from './hooks/useSubscriptions';
 import { useWebsocket } from './hooks/useWebsocket';
 import { useGamePageSync } from './hooks/useGamePageSync';
+import { useChatMessages } from './hooks/useChatMessages';
 
 const MainRouter = memo(function MainRouterFn() {
     const { subscriptions, addSubscription, removeSubscription } =
         useSubscriptions();
+
+    const { chatMessages, addChatMessage, clearChatMessages } =
+        useChatMessages();
 
     const {
         game,
@@ -44,7 +48,8 @@ const MainRouter = memo(function MainRouterFn() {
         setCompetitiveTeamsAnswers,
         pageState,
         setPageState,
-        addSubscription
+        addSubscription,
+        addChatMessage
     });
 
     const leaveGame = useCallback(() => {
@@ -100,6 +105,7 @@ const MainRouter = memo(function MainRouterFn() {
                         clientId={clientId}
                         clientTeamNumber={clientTeamNumber}
                         clientName={clientNameProps.clientName}
+                        chatMessages={chatMessages}
                         game={game}
                     />
                 ) : undefined;
@@ -112,6 +118,7 @@ const MainRouter = memo(function MainRouterFn() {
                     <Competitive
                         game={game}
                         clientId={clientId}
+                        chatMessages={chatMessages}
                         sendMessage={sendMessage}
                         leaveGame={leaveGame}
                         teamsAnswers={competitiveTeamsAnswers}
@@ -123,6 +130,7 @@ const MainRouter = memo(function MainRouterFn() {
                     <Collaborative
                         game={game}
                         clientId={clientId}
+                        chatMessages={chatMessages}
                         sendMessage={sendMessage}
                         leaveGame={leaveGame}
                     />
@@ -140,6 +148,7 @@ const MainRouter = memo(function MainRouterFn() {
         removeSubscription,
         subscriptions,
         clientTeamNumber,
+        chatMessages,
         game,
         competitiveTeamsAnswers,
         leaveGame

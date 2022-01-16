@@ -3,6 +3,7 @@ import Calendar from '../shared/Calendar';
 import {
     CollaborativeGame,
     CompetitiveGame,
+    flattenPlayers,
     isCollaborative
 } from '../shared/types/backendTypes';
 import { InputNumber } from 'rsuite';
@@ -16,6 +17,8 @@ import {
 } from '../shared/types/socketTypes';
 import { CollaborativeParty } from './CollaborativeParty';
 import { CompetitiveParty } from './CompetitiveParty';
+import { Chat } from '../shared/Chat';
+import { ChatMessage } from '../shared/types/httpTypes';
 
 interface SettingsProps {
     createCollaborative: boolean;
@@ -25,6 +28,7 @@ interface SettingsProps {
     clientId: string;
     clientName: string;
     clientTeamNumber: number | undefined;
+    chatMessages: ChatMessage[];
     game?: CollaborativeGame | CompetitiveGame;
 }
 
@@ -36,6 +40,7 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
         clientId,
         clientName,
         clientTeamNumber,
+        chatMessages,
         removeSubscription,
         subscriptions
     } = props;
@@ -120,6 +125,12 @@ export const Settings = memo(function SettingsFn(props: SettingsProps) {
                                 sendMessage={sendMessage}
                             />
                         )}
+                        <Chat
+                            players={flattenPlayers(game.players)}
+                            chatMessages={chatMessages}
+                            sendMessage={sendMessage}
+                            isCollaborative={isCollaborative(game)}
+                        />
                     </div>
                     <button
                         className={styles.gameStartButton}

@@ -8,11 +8,13 @@ import {
     PlayerInfo
 } from '../shared/types/backendTypes';
 import {
+    ChatMessage,
     CLIENT_NAME_KEY,
     HttpPlayerId,
-    HttpResponse,
+    HttpResponseRaw,
     isHttpPlayerId,
-    MessageType
+    MessageType,
+    unpackResponse
 } from '../shared/types/httpTypes';
 import { PageState } from '../shared/types/pageState';
 import { ClientNameProps } from '../shared/types/propTypes';
@@ -30,6 +32,7 @@ interface useWebsocketProps {
     pageState: PageState;
     setPageState: (pageState: PageState) => void;
     addSubscription: (subscription: string) => void;
+    addChatMessage: (chatMessage: ChatMessage) => void;
 }
 export function useWebsocket(props: useWebsocketProps) {
     const {
@@ -38,7 +41,8 @@ export function useWebsocket(props: useWebsocketProps) {
         setCompetitiveTeamsAnswers,
         pageState,
         setPageState,
-        addSubscription
+        addSubscription,
+        addChatMessage
     } = props;
     const [clientRef, setClientRef] = useState<any | undefined>(undefined);
     const [clientId, setClientId] = useState<string | undefined>();
@@ -47,7 +51,7 @@ export function useWebsocket(props: useWebsocketProps) {
     );
     const [gaveWarning, setGaveWarning] = useState(false);
 
-    type HttpMessageType = HttpResponse<
+    type HttpMessageType = HttpResponseRaw<
         HttpPlayerId | CollaborativeGame | CompetitiveGame | Grid[]
     >;
     const clientTeamNumber = useMemo(
@@ -89,7 +93,11 @@ export function useWebsocket(props: useWebsocketProps) {
     const onMessageReceive = useCallback(
         (msg: HttpMessageType) => {
             console.log('this is the message', msg, pageState);
-            const messageType = msg.headers.type[0];
+            const unpackedMessage = unpackResponse(msg);
+            if (unpackedMessage.headers.message) {
+                addChatMessage(unpackedMessage.headers.message);
+            }
+            const messageType = unpackedMessage.headers.type;
             if (isHttpPlayerId(msg.body)) {
                 if (messageType === MessageType.GET_PLAYER_ID) {
                     setClientId(msg.body);
@@ -133,6 +141,7 @@ export function useWebsocket(props: useWebsocketProps) {
             }
         },
         [
+            addChatMessage,
             addSubscription,
             clientTeamNumber,
             pageState,

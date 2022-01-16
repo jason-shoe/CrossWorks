@@ -35,6 +35,24 @@ export interface CompetitiveGame extends Game {
     teamAnswers: Grid[];
 }
 
+export function isCollaborativePlayers(
+    object: PlayerInfo[] | PlayerInfo[][]
+): object is PlayerInfo[] {
+    if (object.length === 0) {
+        return true;
+    }
+    return 'playerId' in object[0];
+}
+
+export function flattenPlayers(players: PlayerInfo[] | PlayerInfo[][]) {
+    if (isCollaborativePlayers(players)) {
+        return players;
+    }
+    return players.reduce((acc: PlayerInfo[], curVal: PlayerInfo[]) => {
+        return acc.concat(curVal);
+    }, []);
+}
+
 export interface Game {
     gameId: string;
     crosswordId: string;

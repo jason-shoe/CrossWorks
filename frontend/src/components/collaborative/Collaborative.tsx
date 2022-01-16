@@ -1,5 +1,10 @@
 import { memo, useState, useEffect, useMemo, useCallback } from 'react';
-import { CollaborativeGame, GameStatus } from '../shared/types/backendTypes';
+import {
+    CollaborativeGame,
+    GameStatus,
+    isCollaborative,
+    isCollaborativeGameId
+} from '../shared/types/backendTypes';
 import { CellHintAnnotation } from '../shared/types/boardTypes';
 import './Collaborative.css';
 import { SendMessageFn } from '../shared/types/socketTypes';
@@ -9,10 +14,13 @@ import { GameBoard } from '../crossword/GameBoard';
 import { WinScreen } from '../header/WinScreen';
 import { Header } from '../header/Header';
 import styles from './Collaborative.module.scss';
+import { Chat } from '../shared/Chat';
+import { ChatMessage } from '../shared/types/httpTypes';
 
 interface CollaborativeProps {
     game: CollaborativeGame;
     clientId: string;
+    chatMessages: ChatMessage[];
     sendMessage: SendMessageFn;
     leaveGame: () => void;
 }
@@ -20,7 +28,7 @@ interface CollaborativeProps {
 export const Collaborative = memo(function Collaborative(
     props: CollaborativeProps
 ) {
-    const { game, sendMessage, leaveGame, clientId } = props;
+    const { game, chatMessages, sendMessage, leaveGame, clientId } = props;
     const [cellAnnotations, setCellAnnotations] = useState<
         CellHintAnnotation[][] | undefined
     >(undefined);
@@ -68,6 +76,12 @@ export const Collaborative = memo(function Collaborative(
                             sendMessage={sendMessage}
                             cellAnnotations={cellAnnotations}
                         />
+                        <Chat
+                            players={game.players}
+                            chatMessages={chatMessages}
+                            sendMessage={sendMessage}
+                            isCollaborative={isCollaborative(game)}
+                        />
                         {!winScreenClosed && game.status === GameStatus.WON && (
                             <WinScreen closeWindow={closeWinScreen} />
                         )}
@@ -82,6 +96,7 @@ export const Collaborative = memo(function Collaborative(
         sendMessage,
         leaveGame,
         clientId,
+        chatMessages,
         winScreenClosed,
         closeWinScreen
     ]);
