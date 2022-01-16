@@ -1,0 +1,21 @@
+.chatWrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    .chatHistory {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        height: 200px;
+        overflow: scroll;
+        > tr:nth-child(odd) {
+            background-color: #4c8bf5;
+            color: #fff;
+        }
+    }
+
+    .chatInputWrapper {
+        display: flex;
+        flex-direction: row;
+    }
+}

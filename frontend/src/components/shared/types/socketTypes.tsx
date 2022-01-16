@@ -22,6 +22,7 @@ export enum GameSocketEndpoint {
 
 export enum PlayerSocketEndpoint {
     GET_PLAYER_ID = '/app/get-player-id',
+    CHAT = '/app/chat',
     CREATE_GAME = '/app/create', // requires a bool on if it is collaborative and new playerName
     CONNECT = '/app/connect/', // requires a gameId and new playerName
     LEAVE_GAME = '/app/leave-game/', // gameId
