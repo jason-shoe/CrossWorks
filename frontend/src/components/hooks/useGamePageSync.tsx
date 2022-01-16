@@ -13,9 +13,7 @@ export function useGamePageSync() {
     const [game, setGame] = useState<
         CollaborativeGame | CompetitiveGame | undefined
     >(undefined);
-    const [competitiveTeamsAnswers, setCompetitiveTeamsAnswers] = useState<
-        Grid[] | undefined
-    >();
+    const [teamsAnswers, setTeamsAnswers] = useState<Grid[] | undefined>();
 
     useEffect(() => {
         if (game !== undefined) {
@@ -37,7 +35,7 @@ export function useGamePageSync() {
         setGame,
         pageState,
         setPageState,
-        competitiveTeamsAnswers,
-        setCompetitiveTeamsAnswers
+        teamsAnswers,
+        setTeamsAnswers
     };
 }

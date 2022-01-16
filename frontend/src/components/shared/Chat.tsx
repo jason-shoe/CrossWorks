@@ -1,5 +1,5 @@
 import { ChangeEvent, memo, useCallback, useMemo, useState } from 'react';
-import { ChatMessage, ChatMessageType } from './types/httpTypes';
+import { ChatMessage, MessageType } from './types/httpTypes';
 import styles from './Chat.module.scss';
 import { PlayerSocketEndpoint, SendMessageFn } from './types/socketTypes';
 import { PlayerInfo } from './types/backendTypes';
@@ -51,7 +51,7 @@ export const Chat = memo(function ChatFn(props: ChatProps) {
                 {chatMessages.map((message: ChatMessage) => (
                     <tr>
                         <td>
-                            {message.messageType === ChatMessageType.CHAT &&
+                            {message.type === MessageType.CHAT_MESSAGE &&
                                 playerNameMap.get(message.sender)}
                         </td>
                         <td>{message.message}</td>

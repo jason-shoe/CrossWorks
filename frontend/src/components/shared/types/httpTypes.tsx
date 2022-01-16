@@ -1,13 +1,10 @@
 export const BACKEND_URL = 'http://localhost:8080/';
 export const CLIENT_NAME_KEY = 'crossworksClientName';
-export enum ChatMessageType {
-    CHAT = 'chatMessage'
-}
 export interface ChatMessage {
     sender: string;
     receiver: string;
     message: string;
-    messageType: ChatMessageType | null;
+    type: MessageType | null;
 }
 export interface HttpResponse<T> {
     body: T;
@@ -39,7 +36,6 @@ export function unpackResponse<T>(responseRaw: HttpResponseRaw<T>) {
     const sender = getFirstOrNull(responseRaw.headers.sender);
     const receiver = getFirstOrNull(responseRaw.headers.receiver);
     const message = getFirstOrNull(responseRaw.headers.message);
-    const messageType = getFirstOrNull(responseRaw.headers.type);
     let unpackedResponse: HttpResponse<T> = {
         ...responseRaw,
         headers: {
@@ -50,7 +46,7 @@ export function unpackResponse<T>(responseRaw: HttpResponseRaw<T>) {
                           sender,
                           receiver,
                           message,
-                          messageType: messageType as ChatMessageType
+                          type: responseRaw.headers.type[0] as MessageType
                       }
                     : null
         }
@@ -63,8 +59,10 @@ export enum MessageType {
     UPDATE_GAME = 'updateGame',
     CREATE_GAME = 'createGame',
     BAD_GAME_ID = 'badGameId',
+    GAME_IN_PROGRESS = 'gameInProgress',
     START_GAME = 'startGame',
-    TEAMS_ANSWERS_UPDATE = 'competitiveAnswersUpdate'
+    TEAMS_ANSWERS_UPDATE = 'answersUpdate',
+    CHAT_MESSAGE = 'chatMessage'
 }
 
 export type HttpPlayerId = string;

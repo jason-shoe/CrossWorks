@@ -6,6 +6,7 @@ import com.java.backend.CrossWorks.models.Crossword;
 import com.java.backend.CrossWorks.models.Datatype;
 import com.java.backend.CrossWorks.models.Grid;
 import com.java.backend.CrossWorks.models.GridCell;
+import com.java.backend.CrossWorks.service.HttpUtil;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import javax.persistence.*;
@@ -25,21 +26,6 @@ public class CollaborativeGame extends Game {
         players = new Vector();
     }
 
-    public CollaborativeGame(Crossword crossword) {
-        this();
-        setCrossword(crossword);
-    }
-
-    public void setCrossword(Crossword crossword) {
-        this.changeCrossword(crossword);
-
-        Grid answersGrid = new Grid(crossword.getSize());
-        answersGrid.copyStructure(crossword.getBoard());
-        int numCells = crossword.getNumNonBlock();
-
-        this.answers = new TeamAnswers(answersGrid, numCells);
-    }
-
     public boolean addPlayer(Player player) {
         if (!players.contains(player)) {
             players.addElement(player);
@@ -48,29 +34,20 @@ public class CollaborativeGame extends Game {
         return true;
     }
 
+    public boolean removePlayer(Player player) {
+        return players.remove(player);
+    }
+
     public boolean hasPlayer(Player player) {
         if (players == null) {
             return false;
         }
         for (Player arrayPlayer : players) {
-            System.out.print(arrayPlayer.getPlayerId());
             if (arrayPlayer.getPlayerId().equals(player.getPlayerId())) {
-                System.out.println();
                 return true;
             }
         }
-        System.out.println();
         return false;
-    }
-
-    public boolean removePlayer(Player player) {
-        return players.remove(player);
-    }
-
-    public void startGame() {
-        System.out.println("Start game thing");
-        super.startGame();
-        answers.clear();
     }
 
     @JsonIgnore
@@ -81,14 +58,7 @@ public class CollaborativeGame extends Game {
         return players.size() != 0;
     }
 
-    public Vector<Player> getPlayers() {
-        if (players == null) {
-            return new Vector<>();
-        }
-        return players;
-    }
-
-    public void makeMove(Player player, int x, int y, char val) throws InvalidMove {
+    public boolean makeMove(Player player, int x, int y, char val) throws InvalidMove {
         answers.makeMove(x, y, GridCell.charValueOf(val), this.getCell(x, y));
         if (answers.isComplete()) {
             if (answers.isCorrect()) {
@@ -96,23 +66,38 @@ public class CollaborativeGame extends Game {
             } else {
                 this.markIncorrect();
             }
+            return true;
         }
-    }
-
-    public Grid getTeamAnswers() {
-        if (answers != null) {
-            return answers.getAnswers();
-        } else {
-            return null;
-        }
+        return false;
     }
 
     public void sendTeamAnswers(SimpMessagingTemplate simpMessagingTemplate) {
-        return;
+        if (answers != null) {
+            Vector<Grid> answersVector = new Vector();
+            answersVector.add(answers.getAnswers());
+            simpMessagingTemplate.convertAndSend(
+                    HttpUtil.getGameEndpoint(this.getGameId()),
+                    HttpUtil.createResponse(answersVector, "answersUpdate", null));
+        }
+    }
+
+    public void setEmptyAnswers() {
+        Crossword crossword = this.getCrossword();
+        Grid answersGrid = new Grid(crossword.getSize());
+        answersGrid.copyStructure(crossword.getBoard());
+        int numCells = crossword.getNumNonBlock();
+        this.answers = new TeamAnswers(answersGrid, numCells);
     }
 
     public void reset() {
         answers = null;
+    }
+
+    public Vector<Player> getPlayers() {
+        if (players == null) {
+            return new Vector<>();
+        }
+        return players;
     }
 
 }

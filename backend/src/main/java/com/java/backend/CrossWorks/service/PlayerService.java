@@ -2,12 +2,11 @@ package com.java.backend.CrossWorks.service;
 
 import com.java.backend.CrossWorks.collaborative.Game;
 import com.java.backend.CrossWorks.collaborative.Player;
+import com.java.backend.CrossWorks.controller.dto.Message;
 import com.java.backend.CrossWorks.exceptions.InvalidParamException;
 import com.java.backend.CrossWorks.storage.PlayerStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -82,11 +81,10 @@ public class PlayerService {
                 Game gameLeft =
                         gameService.leaveGame(currentPlayer.getCurrentGameId(), currentPlayer);
                 if (gameLeft != null) {
-                    HttpHeaders responseHeaders = new HttpHeaders();
-                    responseHeaders.set("type", "updateGame");
                     simpMessagingTemplate.convertAndSend(
                             "queue/game/" + gameLeft.getGameId(),
-                            ResponseEntity.ok().headers(responseHeaders).body(gameLeft));
+                            HttpUtil.createResponse(gameLeft, "updateGame",
+                                    new Message(currentPlayer, HttpUtil.GAME, "left the game")));
                 }
             }
             playerRepo.deleteById(playerId);
@@ -101,5 +99,13 @@ public class PlayerService {
         };
         return performAction(action, playerId, "Player ID doesn't exist in joinGame");
     }
+
+    public Player leaveGame(String playerId) throws InvalidParamException {
+        Consumer<Player> action = (player) -> {
+            player.setCurrentGameId(null);
+        };
+        return performAction(action, playerId, "Player ID doesn't exist in joinGame");
+    }
+
 
 }

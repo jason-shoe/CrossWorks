@@ -2,8 +2,8 @@ import { memo, useState, useEffect, useMemo, useCallback } from 'react';
 import {
     CollaborativeGame,
     GameStatus,
-    isCollaborative,
-    isCollaborativeGameId
+    Grid,
+    isCollaborative
 } from '../shared/types/backendTypes';
 import { CellHintAnnotation } from '../shared/types/boardTypes';
 import './Collaborative.css';
@@ -19,6 +19,7 @@ import { ChatMessage } from '../shared/types/httpTypes';
 
 interface CollaborativeProps {
     game: CollaborativeGame;
+    teamAnswers: Grid;
     clientId: string;
     chatMessages: ChatMessage[];
     sendMessage: SendMessageFn;
@@ -28,7 +29,14 @@ interface CollaborativeProps {
 export const Collaborative = memo(function Collaborative(
     props: CollaborativeProps
 ) {
-    const { game, chatMessages, sendMessage, leaveGame, clientId } = props;
+    const {
+        game,
+        teamAnswers,
+        chatMessages,
+        sendMessage,
+        leaveGame,
+        clientId
+    } = props;
     const [cellAnnotations, setCellAnnotations] = useState<
         CellHintAnnotation[][] | undefined
     >(undefined);
@@ -39,7 +47,7 @@ export const Collaborative = memo(function Collaborative(
         const cellAnnotations = getCellAnnotations(game.crossword);
         setCellAnnotations(cellAnnotations);
         setWinScreenClosed(false);
-    }, [game.crossword, game.teamAnswers]);
+    }, [game.crossword]);
 
     const closeWinScreen = useCallback(() => {
         setWinScreenClosed(true);
@@ -71,7 +79,7 @@ export const Collaborative = memo(function Collaborative(
                         />
                         <GameBoard
                             game={game}
-                            teamAnswers={game.teamAnswers}
+                            teamAnswers={teamAnswers}
                             clientId={clientId}
                             sendMessage={sendMessage}
                             cellAnnotations={cellAnnotations}
@@ -95,6 +103,7 @@ export const Collaborative = memo(function Collaborative(
         game,
         sendMessage,
         leaveGame,
+        teamAnswers,
         clientId,
         chatMessages,
         winScreenClosed,

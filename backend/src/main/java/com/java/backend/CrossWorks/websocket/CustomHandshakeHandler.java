@@ -18,11 +18,9 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
             Map<String, Object> attributes
     ) {
         // Generate principal with UUID as name
-        System.out.println("BEFORE HANDSHAKE 2");
         ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
         HttpSession session = servletRequest.getServletRequest().getSession();
         String playerId = Datatype.PLAYER.prefix + session.getId();
-        System.out.println("Created a player: " + playerId);
         attributes.put("playerId", playerId);
         return new StompPrincipal(playerId);
     }

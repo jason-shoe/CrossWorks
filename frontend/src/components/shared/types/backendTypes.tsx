@@ -9,16 +9,6 @@ export enum GameStatus {
     LOST = 'LOST'
 }
 
-export function isCollaborativeGameId(gameId: string) {
-    return gameId.startsWith('collaborative_game');
-}
-
-export function isCollaborative(
-    object: CollaborativeGame | CompetitiveGame
-): object is CollaborativeGame {
-    return isCollaborativeGameId(object.gameId);
-}
-
 export interface PlayerInfo {
     playerId: string;
     playerName: string;
@@ -27,30 +17,11 @@ export interface PlayerInfo {
 
 export interface CollaborativeGame extends Game {
     players: PlayerInfo[];
-    teamAnswers: Grid;
 }
 
 export interface CompetitiveGame extends Game {
     players: PlayerInfo[][];
-    teamAnswers: Grid[];
-}
-
-export function isCollaborativePlayers(
-    object: PlayerInfo[] | PlayerInfo[][]
-): object is PlayerInfo[] {
-    if (object.length === 0) {
-        return true;
-    }
-    return 'playerId' in object[0];
-}
-
-export function flattenPlayers(players: PlayerInfo[] | PlayerInfo[][]) {
-    if (isCollaborativePlayers(players)) {
-        return players;
-    }
-    return players.reduce((acc: PlayerInfo[], curVal: PlayerInfo[]) => {
-        return acc.concat(curVal);
-    }, []);
+    winningTeam: number;
 }
 
 export interface Game {
@@ -99,4 +70,32 @@ export interface Clue {
     col: number;
     direction: string;
     answerLength: number;
+}
+
+export function isCollaborativePlayers(
+    object: PlayerInfo[] | PlayerInfo[][]
+): object is PlayerInfo[] {
+    if (object.length === 0) {
+        return true;
+    }
+    return 'playerId' in object[0];
+}
+
+export function flattenPlayers(players: PlayerInfo[] | PlayerInfo[][]) {
+    if (isCollaborativePlayers(players)) {
+        return players;
+    }
+    return players.reduce((acc: PlayerInfo[], curVal: PlayerInfo[]) => {
+        return acc.concat(curVal);
+    }, []);
+}
+
+export function isCollaborativeGameId(gameId: string) {
+    return gameId.startsWith('collaborative_game');
+}
+
+export function isCollaborative(
+    object: CollaborativeGame | CompetitiveGame
+): object is CollaborativeGame {
+    return isCollaborativeGameId(object.gameId);
 }
